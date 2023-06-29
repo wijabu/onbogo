@@ -1,0 +1,18 @@
+{
+    "product_search_list": [
+        "olive oil",
+        "milk",
+        "lay's",
+        "tide"
+    ],
+    "store_id": "#######",
+    "sale_id": "#######",
+    "recipient_zip": "12345",
+    "recipient_phone": "2125551234",
+    "recipient_email": "user@email.com",
+    "preferred_alert": [
+        "email",
+        "sms",
+        "push"
+    ]
+}
