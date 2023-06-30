@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
-import smtplib, ssl, json, logging
+import smtplib
+import ssl
+import json
+import logging
 
 logging.basicConfig(
     # filename='myLogFile.txt', # use this to write logs to specified file
@@ -9,7 +12,6 @@ logging.basicConfig(
 )
 
 # define variables from json files
-
 with open("providers.json", "r") as providers:
     providers = json.load(providers)
 
@@ -71,11 +73,14 @@ def send_alert(alert_msg):
     message = alert_msg
 
     if alert_pref == "email":
+        logging.debug("Sending EMAIL notification")
         send_email(message, sender_credentials)
 
     elif alert_pref == "text":
         number = profile.get("recipient_phone")
         provider = profile.get("phone_provider")
+
+        logging.debug("Sending SMS notification")
 
         send_sms_via_email(number, message, provider, sender_credentials)
 

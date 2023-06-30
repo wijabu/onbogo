@@ -1,12 +1,22 @@
 #!usr/bin/env python3
 
-import notify, sales
-from sales import sale_url
-from sales import my_sale_items
+import schedule
+import time
 
-if __name__ == "__main__":
-    sales.get_ad(sale_url)
-    sales.find_my_sale()
-    alert_msg = "\n".join(my_sale_items)
-    print(alert_msg)
+import notify
+import sales
+
+
+def main():
+    sales.get_ad(sales.sale_url),
+    sales.find_my_sale(),
+    alert_msg = "\n".join(sales.my_sale_items)
     notify.send_alert(alert_msg)
+
+
+schedule.every().thursday.at("10:00").do(main)
+
+
+while True:
+    schedule.run_pending()
+    time.sleep(1)
