@@ -13,5 +13,5 @@ ssl to send SMS messages
 
 ## FUTURE PLANS: 
 1. allow user to define preferred alert method (email, sms, push notifications)
-2. automate script to run weekly on schedule
+2. automate script to run weekly on schedule (complete in the script, but not implemented yet)
 3. integrate into web application to allow user to log in and save / modify keywords in database
