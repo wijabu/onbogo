@@ -1,5 +1,5 @@
-# Publix Sales Alerts
-Scrapes Publix Weekly Ads for BOGO deals and sends SMS alerts.
+# Sales Alerts
+Scrapes weekly ads for sales and sends user notifications.
 
 ##### Disclaimer
 
