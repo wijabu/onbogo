@@ -15,17 +15,6 @@ logging.basicConfig(
 
 # logging.disable(logging.CRITICAL) # this code disables logging for the program
 
-def clear_sales(user):
-    email = user["email"]
-    my_sale_items = user["my_sale_items"]
-    
-    if my_sale_items == []:
-        logging.debug(f"{user['username']}'s basket already empty!")
-    else:
-        logging.debug("Emptying basket...")
-        user = User().my_sales(email=email, my_sale_items=[])
-    
-    return user
 
 def find_sales(sale_url, user, all_sale_items=[]):
     favs = user["favs"]
