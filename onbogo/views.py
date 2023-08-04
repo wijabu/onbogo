@@ -231,3 +231,8 @@ def select_store():
         flash("ERROR: Unable to save store", category="danger")
         
     return render_template("sales.html")
+
+
+@views.route("/demo")
+def demo():
+    return render_template("demo.html")
