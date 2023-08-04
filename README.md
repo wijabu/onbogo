@@ -1,7 +1,9 @@
 # BOGO Sales Alerts
 Scrapes weekly ads for sales and sends user notifications.
 
-This web app allows users to create profiles, find and save their nearest grocery store, save keywords / favorite groceries, and choose a preferred method of notification (email or text / sms). Users can also log into the app to update their favorites and manually trigger notifcations at any time. No manual trigger is needed, however, as the application will automatically send notifcations every Thursday when the new sales drop. 
+This web app allows users to create profiles, find and save their nearest grocery store, save keywords / favorite groceries, and choose a preferred method of notification (email or text / sms). 
+
+Users can also log into the app to update their favorites and manually trigger notifcations at any time. No manual trigger is needed, however, as the application will automatically send notifcations every Thursday when the new sales drop. 
 
 ##### Disclaimer
 
