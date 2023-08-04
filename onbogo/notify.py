@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 
+import http.client
+import urllib
 import smtplib
 import ssl
 import json
 import logging
+
+from . import cfg
 
 logging.basicConfig(
     # filename='myLogFile.txt', # use this to write logs to specified file
@@ -12,30 +16,19 @@ logging.basicConfig(
 )
 
 # define variables from json files
-with open("providers.json", "r") as providers:
+with open("onbogo/static/files/providers.json", "r") as providers:
     providers = json.load(providers)
-
-with open(
-    "../config.json", "r"
-) as config:  # defines sender credentials for SMS / EMAIL / PUSH notifications
-    config = json.load(config)
-
-with open(
-    "../profile.json", "r"
-) as profile:  # will be replaced in the future with user-created profiles
-    profile = json.load(profile)
-    alert_pref = profile.get("alert_pref")
 
 
 def send_email(
     message: str,
     sender_credentials: tuple,
+    receiver_email: str,
     subject: str = "BOGO Alert!",
     smtp_server="smtp.gmail.com",
-    smtp_port: int = "587",
+    smtp_port: int = "587"
 ):
     sender_email, email_password = sender_credentials
-    receiver_email = profile.get("recipient_email")
 
     email_message = f"Subject:{subject}\nTo:{receiver_email}\n{message}"
 
@@ -68,21 +61,54 @@ def send_sms_via_email(
         email.sendmail(sender_email, receiver_email, email_message)
 
 
-def send_alert(alert_msg):
-    sender_credentials = (config.get("email"), config.get("password"))
+def send_push(message: str, push_credentials: tuple):
+    api_token, user_key = push_credentials
+    push_message = message
+
+    # create connection
+    conn = http.client.HTTPSConnection("api.pushover.net:443")
+
+    # make POST request to send message
+    conn.request(
+        "POST",
+        "/1/messages.json",
+        urllib.parse.urlencode(
+            {
+                "token": api_token,
+                "user": user_key,
+                "message": push_message,
+                "title": "BOGO Alert!",
+                "url": "",
+                "priority": "0",
+            }
+        ),
+        {"Content-type": "application/x-www-form-urlencoded"},
+    )
+    conn.getresponse()
+
+
+def send_alert(alert_msg, user):
+    sender_credentials = (cfg.SENDER_EMAIL, cfg.SENDER_PASSWORD)
+    push_credentials = (cfg.API_TOKEN, cfg.USER_KEY)
+    
     message = alert_msg
+    notification = user["notification"]
 
-    if alert_pref == "email":
+    if notification == "email":
+        receiver_email=user["email"]
+
         logging.debug("Sending EMAIL notification")
-        send_email(message, sender_credentials)
+        send_email(message, sender_credentials, receiver_email)
 
-    elif alert_pref == "text":
-        number = profile.get("recipient_phone")
-        provider = profile.get("phone_provider")
+    elif notification == "text" or "sms" or "text / sms":
+        number=user["phone"]
+        provider=user["provider"]
 
         logging.debug("Sending SMS notification")
-
         send_sms_via_email(number, message, provider, sender_credentials)
+
+    elif notification == "push":
+        send_push(message, push_credentials)
 
 
 if __name__ == "__main__":

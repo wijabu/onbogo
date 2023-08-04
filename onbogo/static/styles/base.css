@@ -1,0 +1,110 @@
+:root {
+    --ff-logo: "Opificio", sans-serif;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    color: #2f880f;
+    width: 100%;
+    margin: 0;
+    overflow-x: hidden;
+    height: 100vh;
+}
+
+.btn-box {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: .25em;
+}
+
+.btn-none {
+    background: none;
+    border: none;
+}
+
+.btn-none:hover {
+    text-decoration: line-through;
+    font-style: italic;
+    opacity: 50;
+    color: gray;
+}
+
+.btn-secondary {
+    background-color: #2f880f;
+    color: white;
+    text-shadow: none;
+    display: inline;
+}
+
+.btn-store {
+    padding: .25em 3em;
+}
+
+.card-top {
+    color: black;
+}
+
+.errorpage {
+    margin-top: 5rem;
+}
+
+.homepage {
+    height: 90vh;
+    margin: 0 3rem;
+}
+
+.list-items {
+    list-style: none;
+    padding: 0;
+}
+
+.list-items li:before {
+    content: '✓ ';
+}
+
+.logo {
+    font-family: var(--ff-logo);
+    letter-spacing: .05em;
+}
+
+main {
+    margin-top: auto;
+}
+
+.masthead {
+    margin: .5rem auto .5rem 2rem;
+}
+
+nav {
+    background-color: #2f880f;
+    color: white;
+    border-bottom: 1px solid white;
+    position: sticky;
+    width: 100%;
+    top: 0;
+    z-index: 99;
+    display: flex;
+    align-items: center;
+    height: 2.5rem;
+}
+
+.navigation-list {
+    margin-right: 2rem;
+    margin-left: auto;
+    display: flex;
+    justify-content: center;
+}
+
+.navigation-list__item {
+    padding: 0.5rem;
+    color: rgb(255, 255, 255, 0.5)
+}
+
+.txt-green {
+    color: #2f880f;
+}

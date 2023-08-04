@@ -9,7 +9,7 @@ setup(
     description="Get notified when your favorite groceries go on sale",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/wijabu/OnBoGo",
+    url="https://github.com/wijabu/onbogo",
     package_dir={"": "onbogo"},
     author="wijabu",
     author_email="williamjamesbuchanan@gmail.com",

@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Sales Page{% endblock %}
+{% block content %}
+
+<div class="container d-flex justify-content-center align-items-center mt-5">
+    <div class="row flex-fill">
+        <h1 class="text-center logo">Welcome back, {{ session["user"]["username"] }}</h1>
+        <div class="col-md-6 offset-md-3">
+            <hr>
+            <div class="card-body">
+                <div class="card-top text-center">
+                    <h5 class="card-title logo">my shopping list</h5>
+                    <br>
+                    <div class="mb-3">
+                        <ul class="list-items">
+                            {% for item in session["user"]["favs"] %}
+                                <form action="/remove" method="POST" class="validated-form" novalidate>
+                                    <input name="{{ item }}" id="{{ item }}" value="{{ item }}" hidden>
+                                    <li><button class="btn-none" type="submit">{{ item }}</button></li>
+                                </form>
+                            {% endfor %}
+                        </ul>
+                        {% if session["user"]["favs"]|length > 0: %}
+                            <p class="text-secondary opacity-50 fst-italic">NOTE: click item to remove from list</p>
+                        {% else: %}
+                            <p class="text-secondary opacity-50 fst-italic">Add items to your list below</p>
+                        {% endif %}                
+                    </div>
+                </div>
+                <hr>
+                <br>
+                <form action="/sales" method="POST" class="validated-form" novalidate>
+                    <div class="mb-3">
+                        <input class="form-control" type="item" name="item" id="item" placeholder="e.g. bacon, Sweet Baby Ray's, deli" required>
+                    </div>
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-secondary logo">add item</button>
+                    </div>
+                </form>
+
+                <div class="btn-box">
+
+                    <div class="mb-3">
+                        <form action="/locate" method="POST" class="validated-form" novalidate>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-outline-secondary btn-block logo">select store<span class="text-secondary">*</span></button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="mb-3">
+                        <form action="/find" method="POST" class="validated-form" novalidate>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-outline-secondary btn-block logo">find my sales!</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <hr>  
+                                  
+                <div class="mb-3">
+                    {% if stores %}
+                    <h3>Select a store to save:</h3>
+                    <br>
+                        {% for store in stores %}   
+                        <p class="fw-medium fs-5 lh-1 text-secondary">{{ store.title }}</p>
+                        <p class="fw-light fs-6 lh-1 text-secondary">{{ store.address }}</p>
+                            <form action="/select" method="POST" class="validated-form" novalidate>
+                                <input name="{{ store }}" id="{{ store }}" value="{{ store }}" hidden>
+                                <div class="container d-flex justify-content-center align-items-center">
+                                    <button class="btn btn-secondary btn-store logo" type="submit">Save</button>
+                                </div>
+                            </form>
+                        <hr>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="mb-3 text-center">
+                    {% if my_store["store_id"] %}
+                        <h5>My Store:</h5>
+                        <br>
+                        <p class="fw-medium fs-5 lh-1 text-secondary">{{ my_store["title"] }}</p>
+                        <p class="fw-light fs-6 lh-1 text-secondary">{{ my_store["address"] }}</p>
+                    {% else %}
+                        <br>
+                        <p class="text-secondary opacity-50">Selected store will display here</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

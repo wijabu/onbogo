@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Home Page{% endblock %}
+{% block content %}
+
+<div class="d-flex text-center homepage">
+    <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
+        <main>
+            <h1 class="logo">onbogo</h1>
+            <br>
+            <p class="lead">Get notified when your favorite groceries go on sale! <br><br> Simply register, save
+                your
+                favorite groceries, and <span class="logo">onbogo</span> will let you know what's on sale every
+                Thursday.<br><br>
+            </p>
+            <a href="/login" class="btn btn-lg btn-secondary fw-bold">login</a>
+        </main>
+
+        <footer class="mt-auto">
+            <p class="text-secondary opacity-50">&copy; 2023 onbogo</p>
+        </footer>
+    </div>
+</div>
+
+{% endblock %}

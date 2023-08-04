@@ -1,17 +1,15 @@
-# Sales Alerts
+# BOGO Sales Alerts
 Scrapes weekly ads for sales and sends user notifications.
 
 ##### Disclaimer
 
-> This project is a work in progress. Version 1.0 is a POC for the Python program functionality, but future versions will see this project transform from a simple Python script into a Progressive Web Application.
+> This project is a work in progress. Version 1.0 was a POC for the Python program functionality. 
+> Version 2.0 is an evolution from a simple Python script to a complete Flask application. 
+> Possible Version 3.0 would transform this Flask app into a Progressive Web Application (PWA).
 
 ## DEPENDENCIES:
 
+APScheduler (https://pypi.org/project/beautifulsoup4/) for running background process for cron-like capabilities
 Beautiful Soup (https://pypi.org/project/beautifulsoup4/) for html parsing
-smtplib to send email
-ssl to send SMS messages
-
-## FUTURE PLANS: 
-1. allow user to define preferred alert method (email, sms, push notifications)
-2. automate script to run weekly on schedule (complete in the script, but not implemented yet)
-3. integrate into web application to allow user to log in and save / modify keywords in database
+Flask (https://pypi.org/project/flask/) for application framework
+pymongo (https://pypi.org/project/pymongo/) for interacting with MongoDB

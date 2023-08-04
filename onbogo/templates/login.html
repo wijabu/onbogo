@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Login Page{% endblock %}
+{% block content %}
+
+<div class="container d-flex justify-content-center align-items-center mt-5">
+    <div class="row flex-fill">
+        <div class="col-md-6 offset-md-3">
+            <div class="card shadow">
+                <!-- <img src="../static/images/go_light.jpeg" alt="" class="card-img-top img-fluid"> -->
+                <div class="card-body">
+                    <h5 class="card-title logo">login</h5>
+                    <form action="/login" method="POST" class="validated-form" novalidate>
+                        <div class="mb-3">
+                            <label class="form-label" for="email">email</label>
+                            <input class="form-control" type="text" name="email" id="email" autofocus required>
+                            <div class="valid-feedback">
+                                Looks good!
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="password">password</label>
+                            <input class="form-control" type="password" name="password" id="password" required>
+                            <div class="valid-feedback">
+                                Looks good!
+                            </div>
+                        </div>
+                        <div class="d-grid">
+                            <button class="btn btn-secondary btn-block logo" value="submit">login</button>
+                        </div>
+                    </form>
+                    <br>
+                    <hr>
+                        <a class="dropdown-item" href="/register">New around here? <span class="txt-green">Sign up</span></a>
+                        <!-- <a class="txt-green" href="/reset">Forgot password?</a> -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
