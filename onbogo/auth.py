@@ -3,8 +3,8 @@ from passlib.hash import pbkdf2_sha256
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app
 auth = Blueprint("auth", __name__)
 
-from . import db
 from .models import User
+from . import db
 
 
 @auth.route("/login", methods=["GET", "POST"])

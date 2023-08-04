@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 
+import os
 import http.client
 import urllib
 import smtplib
 import ssl
 import json
 import logging
+from dotenv import load_dotenv
 
-from . import cfg
+load_dotenv()  # take environment variables from .env.
 
 logging.basicConfig(
     # filename='myLogFile.txt', # use this to write logs to specified file
@@ -88,8 +90,8 @@ def send_push(message: str, push_credentials: tuple):
 
 
 def send_alert(alert_msg, user):
-    sender_credentials = (cfg.SENDER_EMAIL, cfg.SENDER_PASSWORD)
-    push_credentials = (cfg.API_TOKEN, cfg.USER_KEY)
+    sender_credentials = (os.getenv("SENDER_EMAIL"), os.getenv("SENDER_PASSWORD"))
+    push_credentials = (os.getenv("API_TOKEN"), os.getenv("USER_KEY"))
     
     message = alert_msg
     notification = user["notification"]

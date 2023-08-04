@@ -1,4 +1,5 @@
 import ast
+import time
 
 from functools import wraps
 from flask import Blueprint, render_template, session, request, flash, redirect, url_for
@@ -78,6 +79,7 @@ def profile():
                 # update user profile
                 User().update_profile(email=email, notification=notification, provider=provider, phone=phone, zip=zip)
                 flash("Profile updated!", category="success")
+                return redirect(url_for("views.sales"))
     except:
         flash("ERROR: Unable to update profile.", category="danger")
 

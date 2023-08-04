@@ -1,6 +1,4 @@
 import uuid
-import logging
-import time
 from passlib.hash import pbkdf2_sha256
 
 from flask import jsonify, session
@@ -35,8 +33,7 @@ class User():
             "phone": "",
             "provider": "",
             "notification": "text",
-            "favs": [],
-            "my_sale_items": []
+            "favs": []
         }
 
         # encrypt the password
@@ -138,27 +135,3 @@ class User():
             return jsonify(user), 200
         
         return jsonify("ERROR: unable to update profile with selected store"), 400
-    
-    
-    # def my_sales(self, email, my_sale_items):
-    #     user = db.users.find_one({"email": email})
-    #     logging.debug(f"my_sale_items value to be set to {user['username']}'s profile: {my_sale_items}")
-    #     logging.debug(f"Value found in {user['username']}'s basket BEFORE update: {user['my_sale_items']}")
-
-    #     if user:
-    #         db.users.update_one(
-    #             {"email": email}, 
-    #             {"$set": 
-    #                 {"my_sale_items": my_sale_items}
-    #             }, upsert=True)
-            
-    #         # time.sleep(30)
-    #         print (f"Updated sale items in {user['username']}'s profile!")
-    #         # time.sleep(30)
-    #         user = db.users.find_one({"email": email})
-    #         logging.debug(f"Value found in {user['username']}'s basket AFTER update: {user['my_sale_items']}")
-    #         logging.debug(f"DB updated user: {user}")
-            
-    #         return user
-        
-    #     return jsonify("ERROR: unable to add sale items to user profile."), 400
