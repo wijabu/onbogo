@@ -1,22 +1,105 @@
 #!usr/bin/env python3
 
-import schedule
-import time
+import logging
 
-import notify
-import sales
+from flask import jsonify
 
-
-def main():
-    sales.get_ad(sales.sale_url),
-    sales.find_my_sale(),
-    alert_msg = "\n".join(sales.my_sale_items)
-    notify.send_alert(alert_msg)
+from . import notify
+from . import sales
+from . import db
 
 
-schedule.every().thursday.at("10:00").do(main)
+def run(user):
+    try:
+        store_id = user["my_store"]["store_id"]
+        
+        if store_id:
+            sale_id = user["sale_id"]
+            sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByListing/ByCategory/?ListingSort=8&StoreID={store_id}&CategoryID={sale_id}"
+            
+            my_sale_items = sales.find_sales(sale_url, user=user)
+            logging.debug(f"my_sale_items for {user['username']}: {my_sale_items}")
+            if my_sale_items == []:
+                alert_msg = "No sale items matching your list this week."
+            else:
+                alert_msg = "\n".join(my_sale_items)
+                
+            notify.send_alert(alert_msg, user=user)
+            
+            print(f"Notifications sent to {user['username']}!")
+        else:
+            print(f"No store saved to profile for user: {user['_id']}. Unable to find sales.")
+        
+    except:
+        return jsonify("ERROR: Unable to run app with this user. Verify required data found in user profile.", status=400)
 
 
-while True:
-    schedule.run_pending()
-    time.sleep(1)
+def run_schedule():
+    ALL_USERS = db.users.find({})
+
+    for user in ALL_USERS:
+        if user["my_store"]["store_id"] and user['favs']:
+            run(user)
+
+
+# def run_2():
+#     ALL_USERS = db.users.find({})
+
+#     for user in ALL_USERS:
+#         try:
+#             store_id = user["my_store"]["store_id"]
+            
+#             if store_id:
+#                 cleared_user = sales.clear_sales(user)
+#                 print(f"cleared_user: {cleared_user}")
+
+#                 sale_id = user["sale_id"]
+#                 sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByListing/ByCategory/?ListingSort=8&StoreID={store_id}&CategoryID={sale_id}"
+                
+#                 updated_user = sales.find_sales(sale_url, user=cleared_user)
+#                 print(f"updated_user: {updated_user}")
+
+#                 alert_msg = "\n".join(updated_user["my_sale_items"])
+#                 notify.send_alert(alert_msg, user=updated_user)
+                
+#                 print(f"Notifications sent to {user['username']}!")
+#                 # return jsonify("Notifications sent!"), 200
+#             else:
+#                 print(f"No store saved to profile for user: {user['_id']}. Unable to find sales.")
+#                 # return jsonify(f"No store saved to profile for user: {user['_id']}. Unable to find sales.", status=400)
+            
+#         except:
+#             return jsonify("ERROR: Unable to run app with this user. Verify required data found in user profile.", status=400)
+
+
+# def run_3(user):
+#     # ALL_USERS = db.users.find({})
+
+#     # for user in ALL_USERS:
+#         try:
+#             store_id = user["my_store"]["store_id"]
+            
+#             if store_id:
+#                 cleared_user = sales.clear_sales(user)
+#                 logging.debug(f"cleared_user: {cleared_user}")
+
+#                 sale_id = user["sale_id"]
+#                 sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByListing/ByCategory/?ListingSort=8&StoreID={store_id}&CategoryID={sale_id}"
+                
+#                 updated_user = sales.find_sales(sale_url, user=cleared_user)
+#                 logging.debug(f"updated_user: {updated_user}")
+
+#                 alert_msg = "\n".join(updated_user["my_sale_items"])
+#                 notify.send_alert(alert_msg, user=updated_user)
+                
+#                 print(f"Notifications sent to {user['username']}!")
+#                 # return jsonify("Notifications sent!"), 200
+#             else:
+#                 print(f"No store saved to profile for user: {user['_id']}. Unable to find sales.")
+#                 # return jsonify(f"No store saved to profile for user: {user['_id']}. Unable to find sales.", status=400)
+            
+#         except:
+#             return jsonify("ERROR: Unable to run app with this user. Verify required data found in user profile.", status=400)
+
+if __name__ == "__main__":
+    pass
