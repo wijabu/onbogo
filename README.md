@@ -12,10 +12,10 @@ Users can also log into the app to update their favorites and manually trigger n
 
 ## DEPENDENCIES:
 
-APScheduler (https://pypi.org/project/beautifulsoup4/) for running background process for cron-like capabilities
-Beautiful Soup (https://pypi.org/project/beautifulsoup4/) for html parsing
-Flask (https://pypi.org/project/flask/) for application framework
-pymongo (https://pypi.org/project/pymongo/) for interacting with MongoDB
+1. APScheduler (https://pypi.org/project/beautifulsoup4/) for running background process for cron-like capabilities
+2. Beautiful Soup (https://pypi.org/project/beautifulsoup4/) for html parsing
+3. Flask (https://pypi.org/project/flask/) for application framework
+4. pymongo (https://pypi.org/project/pymongo/) for interacting with MongoDB
 
 
 ## FUTURE PLANS: 
