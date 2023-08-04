@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Page Not Found{% endblock %}
+{% block content %}
+
+<div class="d-flex text-center errorpage">
+    <div class="cover-container d-flex w-100 h-100 p-3 flex-column">
+        <main>
+            <h1 class="logo">Internal Server Error</h1>
+            <br>
+            <p class="lead">Ok, attempting to fail gracefully here...<br><br> There appears to be a problem on the server end. This could take some time to resolve. Please check back later.<br><br>
+            </p>
+            <a href="/" class="btn btn-lg btn-secondary fw-bold">Home</a>
+        </main>
+    </div>
+</div>
+
+{% endblock %}

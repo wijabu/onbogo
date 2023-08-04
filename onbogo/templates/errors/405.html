@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Page Not Found{% endblock %}
+{% block content %}
+
+<div class="d-flex text-center errorpage">
+    <div class="cover-container d-flex w-100 h-100 p-3 flex-column">
+        <main>
+            <h1 class="logo">Method not allowed</h1>
+            <br>
+            <p class="lead">Ok, attempting to fail gracefully here...<br><br> Just select another option from the top menu, or click the button below to find your way back home.<br><br>
+            </p>
+            <a href="/" class="btn btn-lg btn-secondary fw-bold">Home</a>
+        </main>
+    </div>
+</div>
+
+{% endblock %}

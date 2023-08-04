@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Account Page{% endblock %}
+{% block content %}
+
+<div class="container d-flex justify-content-center align-items-center mt-5">
+    <div class="row flex-fill">
+        <div class="col-md-6 offset-md-3">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title logo">update account settings?</h5>
+
+                    <form action="/account" method="POST" class="validated-form" novalidate>
+                        <div class="mb-3">
+                            <label class="form-label" for="username">username</label>
+                            <input class="form-control" type="username" name="username" id="username" value='{{ session["user"]["username"] }}' required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="password1">password</label>
+                            <input class="form-control" type="password" name="password1" id="password1" placeholder="enter password" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="password2">password (confirm)</label>
+                            <input class="form-control" type="password" name="password2" id="password2" placeholder="confirm password" required>
+                        </div>
+                        <div class="mb-2 d-grid">
+                            <button type="submit" class="btn btn-secondary btn-block logo">update account</button>
+                        </div>
+                        <div class="d-grid">
+                            <a href="/delete" class="btn btn-outline-danger btn-block logo">delete account?</a>
+                        </div>
+                    </form>
+                
+                    <div>
+                        {% if delete_option %}
+                            <br>
+                            <p class="text-secondary text-center opacity-50 fst-italic">THIS WILL PERMANENTLY DELETE YOUR ACCOUNT</p>
+                            
+                            <form action="/delete" method="POST" class="validated-form" novalidate>
+                                <input name="delete" id="delete" value="delete" hidden>
+                                <div class="d-grid">
+                                    <button class="btn btn-danger btn-block btn-store logo" type="submit">delete account</button>
+                                </div>
+                            </form>
+                        {% endif %}
+                    </div>
+
+                </div>
+                
+                <div class="text-center mb-3">
+                    <a href="/profile" class="txt-green">cancel</a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

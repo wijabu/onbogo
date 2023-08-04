@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Profile Page{% endblock %}
+{% block content %}
+
+<div class="container d-flex justify-content-center align-items-center mt-5">
+    <div class="row flex-fill">
+        <h1 class="text-center logo">{{ session["user"]["username"] }}'s profile</h1>
+        <div class="col-md-6 offset-md-3">
+
+            <form action="/profile" method="POST" novalidate class="validated-form" enctype="multipart/form-data">
+                
+                <div class="mb-3">
+                    <label class="form-label" for="zip">zip code <span class="text-secondary">*</span></label>
+                    <input class="form-control" maxlength="5" type="text" name="zip" id="zip" value='{{ session["user"]["zip"] }}' required>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label" for="notification">notification preference <span class="text-secondary">*</span></label>
+                    <select class="form-select" aria-label="notification preference" name="notification" id="notification" required>
+                        <option selected>{{ session["user"]["notification"] }}</option>
+                        <option value="text">text / sms</option>
+                        <option value="email">email</option>
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label" for="provider">mobile provider <span class="text-secondary">(* for text / sms)</span></label>
+                    <select class="form-select" aria-label="mobile provider" name="provider" id="provider" required>
+                        <option selected>{{ session["user"]["provider"] }}</option>
+                        <option value="AT&T">AT&T</option>
+                        <option value="Boost Mobile">Boost Mobile</option>
+                        <option value="C-Spire">C-Spire</option>
+                        <option value="Cricket Wireless">Cricket Wireless</option>
+                        <option value="Consumer Cellular">Consumer Cellular</option>
+                        <option value="Google Project Fi">Google Project Fi</option>
+                        <option value="Metro PCS">Metro PCS</option>
+                        <option value="Mint Mobile">Mint Mobile</option>
+                        <option value="Page Plus">Page Plus</option>
+                        <option value="Republic Wireless">Republic Wireless</option>
+                        <option value="Sprint">Sprint</option>
+                        <option value="Straight Talk">Straight Talk</option>
+                        <option value="T-Mobile">T-Mobile</option>
+                        <option value="Ting">Ting</option>
+                        <option value="Tracfone">Tracfone</option>
+                        <option value="U.S. Cellular">U.S. Cellular</option>
+                        <option value="Verizon">Verizon</option>
+                        <option value="Virgin Mobile">Virgin Mobile</option>
+                        <option value="Xfinity Mobile">Xfinity Mobile</option>
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label" for="phone">mobile number <span class="text-secondary">(* for text / sms)</span></label>
+                    <input class="form-control" maxlength="10" type="text" name="phone" id="phone" value='{{ session["user"]["phone"] }}' required>
+                </div>
+
+                <div class="btn-box">
+                    <div class="mb-3 d-grid">
+                        <button type="submit" class="btn btn-secondary btn-block logo">save profile</button>
+                    </div>
+
+                    <div class="mb-3 d-grid">
+                        <a href="/account" class="btn btn-outline-secondary btn-block logo">account</a>
+                    </div>
+                </div>
+            </form>
+            
+            <div class="text-center mb-3 cancel">
+                <a href="/sales">cancel</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
