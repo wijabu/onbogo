@@ -8,24 +8,24 @@
         <div class="col-md-6 offset-md-3">
             <hr>
             <div class="card-body">
-                <div class="card-top text-center">
-                    <h5 class="card-title logo">my shopping list</h5>
+                <div class="card-top">
+                    <h5 class="card-title text-center logo">my shopping list</h5>
                     <br>
-                    <div class="mb-3">
-                        <ul class="list-items">
+                    <div class="mb-3 d-grid">
+                        <ul class="list-items mx-auto justify-content-left">
                             {% for item in session["user"]["favs"] %}
                                 <form action="/remove" method="POST" class="validated-form" novalidate>
                                     <input name="{{ item }}" id="{{ item }}" value="{{ item }}" hidden>
                                     <li><button class="btn-none" type="submit">{{ item }}</button></li>
                                 </form>
                             {% endfor %}
-                        </ul>
-                        {% if session["user"]["favs"]|length > 0: %}
-                            <p class="text-secondary opacity-50 fst-italic">NOTE: click item to remove from list</p>
-                        {% else: %}
-                            <p class="text-secondary opacity-50 fst-italic">Add items to your list below</p>
-                        {% endif %}                
+                        </ul>               
                     </div>
+                    {% if session["user"]["favs"]|length > 0: %}
+                        <p class="text-secondary text-center fst-italic">NOTE: click item to remove from list</p>
+                    {% else: %}
+                        <p class="text-secondary text-center opacity-50 fst-italic">Add items to your list below</p>
+                    {% endif %} 
                 </div>
                 <hr>
                 <br>
