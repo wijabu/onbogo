@@ -10,7 +10,7 @@ app = create_app()
 if __name__ == "__main__":
     # activate scheduler
     scheduler.start()
-    scheduler.add_job(func=onbogo.run_schedule, trigger='cron', day_of_week='thu', hour=12, minute=30)
+    scheduler.add_job(func=onbogo.run_schedule, trigger='cron', day_of_week='fri', hour=12, minute=30)
     atexit.register(lambda: scheduler.shutdown())
 
     # Starts the app
