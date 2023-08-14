@@ -43,6 +43,11 @@
         "sms": "text.republicwireless.com",
         "mms_support": false
     },
+    "Spectrum": {
+        "sms": "vtext.com",
+        "mms": "mypixmessages.com",
+        "mms_support": true
+    },
     "Sprint": {
         "sms": "messaging.sprintpcs.com",
         "mms": "pm.sprint.com",
