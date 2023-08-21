@@ -1,18 +1,30 @@
 {% extends "base.html" %}
+
+{% block start_scripts%}
+<script>
+    function navigate() {
+        window.location.href = 'sales?loading=True';  // Redirects user to /sales when 'find_sales' is finished
+    }
+    fetch('find_sales').then(navigate); // Performing 'find_sales' and then calls navigate() function, declared above
+</script>
+{% endblock%}
+
 {% block title %}Sales Page{% endblock %}
+
 {% block content %}
 
 <div class="container d-flex justify-content-center align-items-center mt-5">
     <div class="row flex-fill">
-        <h1 class="text-center logo">Welcome back, {{ session["user"]["username"] }}</h1>
+        <h1 class="text-center logo">findings sales...</h1>
         <div class="col-md-6 offset-md-3">
             <hr>
+            <div class="loader container d-flex justify-content-center align-items-center"></div>
             <div class="card-body">
-                <!-- {% if loading: %}
+                {% if loading: %}
                     <div class="loader container d-flex justify-content-center align-items-center"></div>
-                {% endif %} -->
+                {% endif %}
                 <div class="card-top">
-                    <h5 class="card-title text-center logo">my shopping list</h5>
+                    <!-- <h5 class="card-title text-center logo">my shopping list</h5>
                     <br>
                     <div class="mb-3 d-grid">
                         <ul class="list-items mx-auto justify-content-left">
@@ -28,7 +40,7 @@
                         <p class="text-secondary text-center fst-italic">NOTE: click item to remove from list</p>
                     {% else: %}
                         <p class="text-secondary text-center opacity-50 fst-italic">Add items to your list below</p>
-                    {% endif %} 
+                    {% endif %}  -->
                 </div>
                 <hr>
                 <br>
