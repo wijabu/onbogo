@@ -42,7 +42,7 @@ def create_app():
 
     # activate scheduler
     scheduler.start()
-    scheduler.add_job(func=onbogo.run_schedule, trigger='cron', day_of_week='wed', hour=13, minute=15)
+    scheduler.add_job(func=onbogo.run_schedule, trigger='cron', day_of_week='wed', hour=13, minute=30)
     atexit.register(lambda: scheduler.shutdown())
 
     return app
