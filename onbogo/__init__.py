@@ -1,11 +1,14 @@
-import os
 import pymongo
-import logging
-from dotenv import load_dotenv
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from flask import Flask
+import os
+import logging
 import config
+import atexit
+
+from flask import Flask
+
+from dotenv import load_dotenv
 
 load_dotenv()  # take environment variables from .env.
 env_short = os.getenv("ENV")
@@ -36,5 +39,10 @@ def create_app():
     app.register_blueprint(auth)
     app.register_blueprint(views)
     app.register_blueprint(errors)
+
+    # activate scheduler
+    scheduler.start()
+    scheduler.add_job(func=onbogo.run_schedule, trigger='cron', day_of_week='wed', hour=13, minute=15)
+    atexit.register(lambda: scheduler.shutdown())
 
     return app
