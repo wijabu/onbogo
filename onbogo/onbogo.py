@@ -23,7 +23,7 @@ def run(user):
                 alert_msg = f"Hi {user['username']}, No sale items matching your list this week."
             else:
                 # alert_msg = f"Incoming sales for {user['username']}\n\n".join(my_sale_items)
-                alert_msg = f"Hello, {user['username']}, here are your sales...\n\n" +"/n".join(my_sale_items)
+                alert_msg = f"Hello, {user['username']}, here are your sales...\n\n".join(my_sale_items)
                 
             notify.send_alert(alert_msg, user=user)
             
