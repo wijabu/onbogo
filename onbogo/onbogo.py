@@ -24,43 +24,16 @@ def run(user):
             if my_sale_items == []:
                 alert_msg = f"Hi {user['username']}, No sale items matching your list this week."
             else:
-                # msg_items = [];
-                # msg_deals = [];
-                # for item in my_sale_items:
-                #     msg_items.append(item["title"])
-                #     msg_deals.append(item["deal"])
-
-                # for i in range(len(my_sale_items)):
-                #     msg_items.append(my_sale_items[i]["title"], my_sale_items[i]["deal"])
-
-
-                msg_titles = [i['title'] for i in my_sale_items]
-                msg_deals = [i['deal'] for i in my_sale_items]
-
-                sale_keys = ["title", "deal"]
-
-                # for i in range(len(my_sale_items)):
-                #     msg_items = list(map(my_sale_items[i].get, sale_keys))
-                
-                # msg_items = [next(iter(i.values())) for i in my_sale_items]
-
-                # items_list = list(my_sale_items[i].values())
-
-                # for j in range(len(items_list)):
-                #     for k in range(len(j)):
-                #         msg_items = list(j)
-
                 list_items = []
+                msg_items = []
                 for item in my_sale_items:
-                    
                     list_items.append(list(item.values()))
-                    print(list(item.values()))
-                    # msg_items.append(my_sale_items[i].values())
-                    msg_items = list_items
+                
+                for item in list_items:
+                    for val in item: 
+                        msg_items.append(val)
 
-                print(f"msg_items: {msg_titles}")
-
-                alert_msg = f"Hello, {user['username']}, here are your sales...\n\n" + "\n".join(msg_titles)
+                alert_msg = f"Hello, {user['username']}, here are your sales...\n\n" + "\n".join(msg_items)
                 
             notify.send_alert(alert_msg, user=user)
             
