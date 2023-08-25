@@ -3,7 +3,7 @@
 {% block start_scripts%}
 <script>
     function navigate() {
-        window.location.href = 'sales?loading=True';  // Redirects user to /sales when 'find_sales' is finished
+        window.location.href = 'sales?loading=True#my_sale_items';  // Redirects user to /sales when 'find_sales' is finished
     }
     fetch('find_sales').then(navigate); // Performing 'find_sales' and then calls navigate() function, declared above
 </script>

@@ -46,10 +46,6 @@ body {
     padding: .25em 3em;
 }
 
-.card-top {
-    color: black;
-}
-
 .errorpage {
     margin-top: 5rem;
 }
@@ -59,13 +55,18 @@ body {
     margin: 0 3rem;
 }
 
-.list-items {
+.items-list {
     list-style: none;
     padding: 0;
 }
 
-.list-items li:before {
+.items:before {
     content: '✓ ';
+}
+
+.items-deals:before {
+    list-style: none;
+    
 }
 
 /* LOADER GIF */
@@ -124,6 +125,19 @@ nav {
     color: rgb(255, 255, 255, 0.5)
 }
 
+.txt-black {
+    color: black;
+}
+
 .txt-green {
     color: #2f880f;
+}
+
+
+
+/* TESTING */
+
+.my_sale_items {
+    background-color: rgba(47, 136, 15, 0.25);
+    border-radius: 2.5%;
 }

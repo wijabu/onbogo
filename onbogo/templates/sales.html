@@ -8,18 +8,15 @@
         <div class="col-md-6 offset-md-3">
             <hr>
             <div class="card-body">
-                <!-- {% if loading: %}
-                    <div class="loader container d-flex justify-content-center align-items-center"></div>
-                {% endif %} -->
-                <div class="card-top">
+                <div class="card-top txt-black">
                     <h5 class="card-title text-center logo">my shopping list</h5>
                     <br>
                     <div class="mb-3 d-grid">
-                        <ul class="list-items mx-auto justify-content-left">
+                        <ul class="items-list mx-auto justify-content-left">
                             {% for item in session["user"]["favs"] %}
                                 <form action="/remove" method="POST" class="validated-form" novalidate>
                                     <input name="{{ item }}" id="{{ item }}" value="{{ item }}" hidden>
-                                    <li><button class="btn-none" type="submit">{{ item }}</button></li>
+                                    <li><button class="btn-none items" type="submit">{{ item }}</button></li>
                                 </form>
                             {% endfor %}
                         </ul>               
@@ -62,27 +59,57 @@
                 
                 <hr>  
                                   
+                {% if stores %}
                 <div class="mb-3">
-                    {% if stores %}
                     <h3>Select a store to save:</h3>
                     <br>
-                        {% for store in stores %}   
-                        <p class="fw-medium fs-5 lh-1 text-secondary">{{ store.title }}</p>
-                        <p class="fw-light fs-6 lh-1 text-secondary">{{ store.address }}</p>
-                            <form action="/select" method="POST" class="validated-form" novalidate>
-                                <input name="{{ store }}" id="{{ store }}" value="{{ store }}" hidden>
-                                <div class="container d-flex justify-content-center align-items-center">
-                                    <button class="btn btn-secondary btn-store logo" type="submit">Save</button>
-                                </div>
-                            </form>
-                        <hr>
-                        {% endfor %}
+                    {% for store in stores %}   
+                    <p class="fw-medium fs-5 lh-1 text-secondary">{{ store.title }}</p>
+                    <p class="fw-light fs-6 lh-1 text-secondary">{{ store.address }}</p>
+                        <form action="/select" method="POST" class="validated-form" novalidate>
+                            <input name="{{ store }}" id="{{ store }}" value="{{ store }}" hidden>
+                            <div class="container d-flex justify-content-center align-items-center">
+                                <button class="btn btn-secondary btn-store logo" type="submit">Save</button>
+                            </div>
+                        </form>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% if loading: %}
+                <div class="mb-3 text-center my_sale_items">
+                    <br>
+                    <h5>
+                        <a id="my_sale_items">– My Sales –</a>
+                    </h5>
+                    <br>
+                    {% if my_sale_items|length > 0: %}
+                    <div class="mb-3 d-grid col-md-6 offset-md-3 txt-black">
+                        <ul class="items-list mx-3 justify-content-left">
+                            {% for item in my_sale_items %}            
+                            <li class="items">{{ item["title"] }}</li>
+                            <li class="fw-light fs-6 lh-1 text-secondary items-deals mb-3">{{ item["deal"] }}</li>
+                            {% endfor %}
+                        </ul>               
+                    </div>
+                    {% else: %}
+                    <div class="mb-3 d-grid col-md-6 offset-md-3"></div>
+                        <h5 class="txt-black">
+                            <a id="my_sale_items">no bogo items found matching your list</a>
+                        </h5>
+                        <br>
+                    </div>
                     {% endif %}
                 </div>
+                <hr>
+                {% endif %}
+                
+
+                
 
                 <div class="mb-3 text-center">
                     {% if my_store["store_id"] %}
-                        <h5>My Store:</h5>
+                        <h5>– My Store –</h5>
                         <br>
                         <p class="fw-medium fs-5 lh-1 text-secondary">{{ my_store["title"] }}</p>
                         <p class="fw-light fs-6 lh-1 text-secondary">{{ my_store["address"] }}</p>

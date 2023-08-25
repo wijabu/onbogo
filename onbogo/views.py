@@ -32,13 +32,18 @@ def home():
 @login_required
 def sales():
     my_store = session["user"]["my_store"]
-    loading = request.args.get('loading')
+    loading = request.args.get("loading")
+
+    if "my_sale_items" not in session:
+        session["my_sale_items"] = []
+
+    my_sale_items = session["my_sale_items"]
 
     if request.method == "GET":
         if loading == "True":
             flash("Finding sales... Check your notifications!", category="success")
 
-        return render_template("sales.html",my_store=my_store)
+        return render_template("sales.html",my_store=my_store, my_sale_items=my_sale_items, loading=loading)
 
     try:
         
@@ -86,7 +91,9 @@ def profile():
 
                 # update user profile
                 User().update_profile(email=email, notification=notification, provider=provider, phone=phone, zip=zip)
+                
                 flash("Profile updated!", category="success")
+                
                 return redirect(url_for("views.sales"))
     except:
         flash("ERROR: Unable to update profile.", category="danger")
@@ -113,7 +120,9 @@ def account():
             else: 
                 # add user to database
                 User().update_account(email=email, username=username, password=password1)
+                
                 flash("Account updated!", category="success")
+                
                 return redirect(url_for("views.profile"))
     except:
         flash("ERROR: Unable to update account.", category="danger")
@@ -169,34 +178,6 @@ def remove_item():
     return render_template("sales.html", my_store=my_store)
 
 
-# @views.route("/find", methods=["GET", "POST"])
-# @login_required
-# def find():
-#     user = session["user"]
-#     my_store = session["user"]["my_store"]
-#     zip = session["user"]["zip"]
-
-#     try:
-#         if request.method == "GET":
-#             return render_template("sales.html")
-        
-#         if my_store["store_id"]:
-#             # flash("Finding sales... Check your notifications!", category="success")
-#             onbogo.run(user=user)
-#             return render_template("sales.html", my_store=my_store, loading=True)
-#         elif zip:
-#             flash("Select store to find sales", category="danger")
-#         else: 
-#             flash("Must add zip code to profile first", category="danger")
-#     except:
-#         flash("ERROR: Unable to find sales at this time.", category="danger")
-        
-#     return render_template("sales.html", my_store=my_store)
-
-
-
-# TEMP ADDITION - TRYING TO ROUTE LOADING SCREEN
-
 @views.route("/find", methods=["GET", "POST"])
 @login_required
 def find():
@@ -206,14 +187,9 @@ def find():
 
     try:
         if request.method == "GET":
-            # if loading == True:
-            #     flash("Finding sales... Check your notifications!", category="success")
-
             return render_template("sales.html")
         
         if my_store["store_id"]:
-            # flash("Finding sales... Check your notifications!", category="success")
-            # onbogo.run(user=user)
             return render_template("load.html", user=user)
         elif zip:
             flash("Select store to find sales", category="danger")
@@ -225,7 +201,7 @@ def find():
     return render_template("load.html", my_store=my_store)
 
 
-# TEMP ADDITION - TRYING TO ROUTE LOADING SCREEN
+# add my_sale_items
 
 @views.route("/find_sales", methods=["GET", "POST"])
 @login_required
@@ -234,13 +210,12 @@ def find_sales():
     my_store = session["user"]["my_store"]
 
     try: 
-        onbogo.run(user=user)
-        flash("Finding sales... Check your notifications!", category="success")
+        my_sale_items = onbogo.run(user=user)        
+        session["my_sale_items"] = my_sale_items
+
         return render_template("sales.html", my_store=my_store)
     except:
         return render_template("load.html")
-
-# TEMP ADDITION - TRYING TO ROUTE LOADING SCREEN
 
 
 @views.route("/locate", methods=["GET", "POST"])
