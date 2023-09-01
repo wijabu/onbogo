@@ -16,13 +16,10 @@ logging.basicConfig(
 
 # logging.disable(logging.CRITICAL) # this code disables logging for the program
 
-stores=[]
-
-def locate(zip):
-    global stores
+def locate(zip, stores=[]):
     stores.clear()
-
-    store_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility?NuepRequest=true&RedirectUrl=&CityStateZip={zip}"
+    
+    store_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility?CityStateZip={zip}"
 
     res = requests.get(store_url)
     res.raise_for_status  # raise an exception if there is a problem downloading URL text
@@ -30,20 +27,21 @@ def locate(zip):
     soup = bs4.BeautifulSoup(res.text, features="html.parser")
     titles = soup.select("p.addressHeadline")
     addresses = soup.select("p.addressStoreTitle")
-    ids = soup.select("a.mapddlink.action-tracking-nav")
+    ids = soup.select("a.mapddlink.action-tracking-directions.excludeFromMobile")
 
     logging.debug("Start store location search")
 
     for i in range(len(titles)):
         title = titles[i].text.strip()
         address = addresses[i].text.strip()
-        store_id = ids[i]["href"][-7:]
+        store_id = ids[i]["data-tracking-storeid"]
         
         logging.debug(
-            "store %s is %s" % (i, title)
+            f"store {i} is {title}"
         )  # will log all items found on weekly ad
         
         stores.append({"title":title, "address":address, "store_id":int(store_id)})
+        print(stores)
     
     if stores == []:
         print("No stores found by zip code")
