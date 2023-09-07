@@ -33,7 +33,7 @@ def run(user):
                     for val in item: 
                         msg_items.append(val)
 
-                alert_msg = f"Hello, {user['username']}, here are your sales...\n\n" + "\n".join(msg_items)
+                alert_msg = f"Hello, {user['username']}, here are your sales...\n\n" + "\n\n".join(msg_items)
                 
             notify.send_alert(alert_msg, user=user)
             
