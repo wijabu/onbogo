@@ -33,7 +33,11 @@ def run(user):
                     for val in item: 
                         msg_items.append(val)
 
-                alert_msg = f"Hello, {user['username']}, here are your sales...\n\n" + "\n\n".join(msg_items)
+                # add line break into list every 3rd element to break up mobile notification message
+                for i in range (0,len(msg_items)):
+                    msg_items.insert(i*3,"\n")
+
+                alert_msg = f"Hello, {user['username']}, here are your sales...\n" + "\n".join(msg_items)
                 
             notify.send_alert(alert_msg, user=user)
             
