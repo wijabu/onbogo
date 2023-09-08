@@ -90,7 +90,9 @@
                         <ul class="items-list mx-3 justify-content-left">
                             {% for item in my_sale_items %}            
                             <li class="items">{{ item["title"] }}</li>
-                            <li class="fw-light fs-6 lh-1 text-secondary items-deals mb-3">{{ item["deal"] }}</li>
+                            <li class="fw-light fs-6 lh-1 text-secondary items-deals">{{ item["deal"] }}</li>
+                            <li class="fw-light fs-6 lh-1 text-secondary items-deals">{{ item["info"] }}</li>
+                            <br>
                             {% endfor %}
                         </ul>               
                     </div>

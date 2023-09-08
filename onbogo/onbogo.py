@@ -14,16 +14,17 @@ def run(user):
         store_id = user["my_store"]["store_id"]
         
         if store_id:
-            sale_id = user["sale_id"]
-            sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByListing/ByCategory/?ListingSort=8&StoreID={store_id}&CategoryID={sale_id}"
-            
-            my_sale_items = sales.find_sales(sale_url, user=user)
+            # call URL for each page of weekly ad + build list of user's sale items
+            pages = sales.get_pages(user)
+            for page in range(1, int(pages)+1):
+                my_sale_items = sales.find_sales(user, page)
 
             logging.debug(f"my_sale_items for {user['username']}: {my_sale_items}")
             
             if my_sale_items == []:
                 alert_msg = f"Hi {user['username']}, No sale items matching your list this week."
             else:
+                # generate single list for titles, deals, and info of sale items
                 list_items = []
                 msg_items = []
                 for item in my_sale_items:
@@ -33,17 +34,24 @@ def run(user):
                     for val in item: 
                         msg_items.append(val)
 
-                # add line break into list every 3rd element to break up mobile notification message
+                # add line break into list every nth element to break up mobile notification message
                 for i in range (0,len(msg_items)):
-                    msg_items.insert(i*3,"\n")
+                    msg_items.insert(i*4,"\n")
 
-                alert_msg = f"Hello, {user['username']}, here are your sales...\n" + "\n".join(msg_items)
+                alert_template = f"Hello, {user['username']}, here are your sales from onbogo.onrender.com :\n" + "\n".join(msg_items)
+                
+                if len(alert_template) < 550:
+                    alert_msg = alert_template
+                else:
+                    alert_msg = f"Hello, {user['username']}, here are your sales...\n" + "\n*****\nNOTE: This is an incomplete list. To see all sales, visit onbogo.onrender.com \n***** " + "\n".join(msg_items[:28])
                 
             notify.send_alert(alert_msg, user=user)
             
-            print(f"Notifications sent to {user['username']}!")
+            logging.debug(f"Notifications sent to {user['username']}!")
+            logging.debug(f"Notifications length: {len(alert_msg)}!")
 
             return my_sale_items
+        
         else:
             print(f"No store saved to profile for user: {user['_id']}. Unable to find sales.")
         
