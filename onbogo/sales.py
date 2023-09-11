@@ -89,7 +89,7 @@ def find_sales(user, page):
         info = all_info[i].upper()
 
         item = {
-            "title":title,
+            "title":title.replace("'",""),
             "deal":deal,
             "info":info
         }
@@ -106,7 +106,7 @@ def find_sales(user, page):
     # may need to refactor this; currently O(n^2)
     for i in range(len(all_sale_items)):
         for j in range(len(favs)):
-            if favs[j].upper() in all_sale_items[i]["title"].upper():
+            if favs[j].upper().replace("'","") in all_sale_items[i]["title"].upper():
                 my_item = unidecode(all_sale_items[i]["title"])
                 my_deal = all_sale_items[i]["deal"]
                 my_info = all_sale_items[i]["info"]

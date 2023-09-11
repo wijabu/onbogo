@@ -38,10 +38,10 @@ def run(user):
                 for i in range (0,len(msg_items)):
                     msg_items.insert(i*4,"\n")
 
-                alert_template = f"Hello, {user['username']}, here are your sales from onbogo.onrender.com :\n" + "\n".join(msg_items)
+                alert_template = f"Hello, {user['username']}, here are your sales from onbogo.onrender.com\n" + "\n".join(msg_items)
                 
                 if len(alert_template) < 550:
-                    alert_msg = alert_template
+                    alert_msg = alert_template.strip()
                 else:
                     alert_msg = f"Hello, {user['username']}, here are your sales...\n" + "\n*****\nNOTE: This is an incomplete list. To see all sales, visit onbogo.onrender.com \n***** " + "\n".join(msg_items[:28])
                 
@@ -49,6 +49,7 @@ def run(user):
             
             logging.debug(f"Notifications sent to {user['username']}!")
             logging.debug(f"Notifications length: {len(alert_msg)}!")
+            # logging.debug(alert_msg)
 
             return my_sale_items
         
