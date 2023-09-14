@@ -13,12 +13,12 @@ logging.basicConfig(
 
 # logging.disable(logging.CRITICAL) # this code disables logging for the program
 
-defaultUser = {
-    "username":"barry",
-    "email":"barry@gmail.com",
+testUser = {
+    "username":"testUser",
+    "email":"testUser@gmail.com",
     "sale_id":5232540,
     "my_store":{"store_id":2501054},
-    "favs":["bacon","oatmilk","Sweet Baby","wine","all"]
+    "favs":["bacon","oatmilk","Sweet Baby","wine","sub"]
     }
 
 all_titles = []
@@ -129,6 +129,6 @@ def find_sales(user, page):
 
 
 if __name__ == "__main__":
-    pages = get_pages(defaultUser)
+    pages = get_pages(testUser)
     for page in range(1, pages+1):
-        find_sales(defaultUser, page)
+        find_sales(testUser, page)
