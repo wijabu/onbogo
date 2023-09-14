@@ -34,7 +34,8 @@ headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleW
 
 def get_pages(user):
     store_id = user["my_store"]["store_id"]
-    sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByPage/Index/?StoreID={store_id}&PromotionCode=Publix-230907"
+
+    sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByPage/Index/?Breadcrumb=Weekly+Ad&StoreID={store_id}&PromotionCode=Publix-230914&PromotionViewMode=1"
     
     res = requests.get(sale_url, headers=headers)
     res.raise_for_status  # raise an exception if there is a problem downloading URL text
@@ -45,9 +46,9 @@ def get_pages(user):
     for page in pages_div:
         page_count = page.find("div", {"class": "pageXofY"}).text.strip()
         page_list = page_count.split()
-        pages = page_list[-1]
+        pages = int(page_list[-1])
 
-        print(f"pages: {pages}")
+        logging.debug(f"pages: {pages}")
         return pages
 
 
@@ -56,8 +57,7 @@ def find_sales(user, page):
     favs = user["favs"]
     email = user["email"]
     
-
-    sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByPage/Index/?StoreID={store_id}&PromotionCode=Publix-230907&PageNumber={page}"
+    sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByPage?PromotionID=159560&PromotionViewMode=1&StoreID={store_id}&PageNumber={page}&BreadCrumb=Weekly+Ad&SneakPeek=N"
 
     res = requests.get(sale_url, headers=headers)
     res.raise_for_status  # raise an exception if there is a problem downloading URL text

@@ -16,7 +16,8 @@ def run(user):
         if store_id:
             # call URL for each page of weekly ad + build list of user's sale items
             pages = sales.get_pages(user)
-            for page in range(1, int(pages)+1):
+            logging.debug(f"Pages count: {pages}")
+            for page in range(1, pages+1):
                 my_sale_items = sales.find_sales(user, page)
 
             logging.debug(f"my_sale_items for {user['username']}: {my_sale_items}")
