@@ -13,7 +13,7 @@ logging.basicConfig(
 
 # logging.disable(logging.CRITICAL) # this code disables logging for the program
 
-user = {
+defaultUser = {
     "username":"barry",
     "email":"barry@gmail.com",
     "sale_id":5232540,
@@ -26,8 +26,6 @@ all_deals = []
 all_info = []
 all_sale_items = []
 my_sale_items = []
-
-store_id = user["my_store"]["store_id"]
 
 headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"}
 
@@ -131,6 +129,6 @@ def find_sales(user, page):
 
 
 if __name__ == "__main__":
-    pages = get_pages(user)
-    for page in range(1, int(pages)):
-        find_sales(user, page)
+    pages = get_pages(defaultUser)
+    for page in range(1, pages+1):
+        find_sales(defaultUser, page)

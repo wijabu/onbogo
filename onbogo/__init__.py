@@ -44,7 +44,7 @@ def create_app():
     scheduler.start()
     
     # scheduler time set to UTC
-    scheduler.add_job(func=onbogo.run_schedule, trigger='cron', day_of_week='thu', hour=15, minute=00)
+    scheduler.add_job(func=onbogo.run_schedule, trigger='cron', day_of_week='thu', hour=15, minute=15)
     atexit.register(lambda: scheduler.shutdown())
 
     return app
