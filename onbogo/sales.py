@@ -25,7 +25,6 @@ all_titles = []
 all_deals = []
 all_info = []
 all_sale_items = []
-my_sale_items = []
 
 headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"}
 
@@ -54,6 +53,8 @@ def find_sales(user, page):
     store_id = user["my_store"]["store_id"]
     favs = user["favs"]
     email = user["email"]
+    
+    my_sale_items = []
     
     sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByPage?PromotionID=159560&PromotionViewMode=1&StoreID={store_id}&PageNumber={page}&BreadCrumb=Weekly+Ad&SneakPeek=N"
 
@@ -129,6 +130,7 @@ def find_sales(user, page):
 
 
 if __name__ == "__main__":
-    pages = get_pages(testUser)
-    for page in range(1, pages+1):
-        find_sales(testUser, page)
+    pass
+    # pages = get_pages(testUser)
+    # for page in range(1, pages+1):
+    #     find_sales(testUser, page)

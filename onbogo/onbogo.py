@@ -62,7 +62,10 @@ def run(user):
 
 
 def run_schedule():
+    # ALL_USERS = db.users.find({"zip":"32789"})
     ALL_USERS = db.users.find({})
+
+    print(ALL_USERS)
 
     for user in ALL_USERS:
         if user["my_store"]["store_id"] and user['favs']:
