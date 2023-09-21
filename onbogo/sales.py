@@ -4,6 +4,7 @@ import bs4
 import requests
 import logging
 from unidecode import unidecode
+from datetime import date
 
 logging.basicConfig(
     # filename='myLogFile.txt', # use this to write logs to specified file
@@ -12,6 +13,9 @@ logging.basicConfig(
 )
 
 # logging.disable(logging.CRITICAL) # this code disables logging for the program
+
+today = date.today()
+formattedDate = today.strftime("%y%m%d")
 
 testUser = {
     "username":"testUser",
@@ -32,7 +36,7 @@ headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleW
 def get_pages(user):
     store_id = user["my_store"]["store_id"]
 
-    sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByPage/Index/?Breadcrumb=Weekly+Ad&StoreID={store_id}&PromotionCode=Publix-230914&PromotionViewMode=1"
+    sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByPage/Index/?Breadcrumb=Weekly+Ad&StoreID={store_id}&PromotionCode=Publix-{formattedDate}&PromotionViewMode=1"
     
     res = requests.get(sale_url, headers=headers)
     res.raise_for_status  # raise an exception if there is a problem downloading URL text
@@ -55,8 +59,8 @@ def find_sales(user, page):
     email = user["email"]
     
     my_sale_items = []
-    
-    sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByPage?PromotionID=159560&PromotionViewMode=1&StoreID={store_id}&PageNumber={page}&BreadCrumb=Weekly+Ad&SneakPeek=N"
+
+    sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByPage/Index/?Breadcrumb=Weekly+Ad&StoreID={store_id}&PromotionCode=Publix-{formattedDate}&PromotionViewMode=1&PageNumber={page}"
 
     res = requests.get(sale_url, headers=headers)
     res.raise_for_status  # raise an exception if there is a problem downloading URL text
@@ -70,9 +74,13 @@ def find_sales(user, page):
     for card in cards:
         title_element = card.find("div", class_="title").text.strip()
         all_titles.append(title_element)
-        
-        deal_element = card.find("div", class_="deal").text.strip()
-        all_deals.append(deal_element)
+
+        if card.find("div", class_="deal"):
+            deal_element = card.find("div", class_="deal").text.strip()
+            all_deals.append(deal_element)
+        else:
+            deal_element = ""
+            all_deals.append(deal_element)
         
         if card.find("div", class_="additionalDealInfo"):
             info_element = card.find("div", class_="additionalDealInfo").text.strip()
