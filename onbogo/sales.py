@@ -34,9 +34,14 @@ headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleW
 
 
 def get_pages(user):
+    logging.debug("initatite: get_pages")
     store_id = user["my_store"]["store_id"]
 
-    sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByPage/Index/?Breadcrumb=Weekly+Ad&StoreID={store_id}&PromotionCode=Publix-{formattedDate}&PromotionViewMode=1"
+    # sale URL with date
+    # sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByPage/Index/?Breadcrumb=Weekly+Ad&StoreID={store_id}&PromotionCode=Publix-{formattedDate}&PromotionViewMode=1"
+
+    # sale URL without date    
+    sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByPage?PromotionID=159707&PromotionViewMode=1&StoreID={store_id}&BreadCrumb=Weekly+Ad&SneakPeek=N&PageNumber=1"
     
     res = requests.get(sale_url, headers=headers)
     res.raise_for_status  # raise an exception if there is a problem downloading URL text
@@ -54,13 +59,18 @@ def get_pages(user):
 
 
 def find_sales(user, page):    
+    logging.debug("initatite: find_sales")
     store_id = user["my_store"]["store_id"]
     favs = user["favs"]
     email = user["email"]
     
     my_sale_items = []
 
-    sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByPage/Index/?Breadcrumb=Weekly+Ad&StoreID={store_id}&PromotionCode=Publix-{formattedDate}&PromotionViewMode=1&PageNumber={page}"
+    # sale URL with date
+    # sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByPage/Index/?Breadcrumb=Weekly+Ad&StoreID={store_id}&PromotionCode=Publix-{formattedDate}&PromotionViewMode=1&PageNumber={page}"
+
+    # sale URL without date    
+    sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByPage?PromotionID=159707&PromotionViewMode=1&StoreID={store_id}&BreadCrumb=Weekly+Ad&SneakPeek=N&PageNumber={page}"
 
     res = requests.get(sale_url, headers=headers)
     res.raise_for_status  # raise an exception if there is a problem downloading URL text
