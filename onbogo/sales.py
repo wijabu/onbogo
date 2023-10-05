@@ -38,10 +38,10 @@ def get_pages(user):
     store_id = user["my_store"]["store_id"]
 
     # sale URL with date
-    # sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByPage/Index/?Breadcrumb=Weekly+Ad&StoreID={store_id}&PromotionCode=Publix-{formattedDate}&PromotionViewMode=1"
+    sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByPage/Index/?Breadcrumb=Weekly+Ad&StoreID={store_id}&PromotionCode=Publix-{formattedDate}&PromotionViewMode=1"
 
     # sale URL without date    
-    sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByPage?PromotionID=159707&PromotionViewMode=1&StoreID={store_id}&BreadCrumb=Weekly+Ad&SneakPeek=N&PageNumber=1"
+    # sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByPage?PromotionID=159707&PromotionViewMode=1&StoreID={store_id}&BreadCrumb=Weekly+Ad&SneakPeek=N&PageNumber=1"
     
     res = requests.get(sale_url, headers=headers)
     res.raise_for_status  # raise an exception if there is a problem downloading URL text
@@ -67,10 +67,10 @@ def find_sales(user, page):
     my_sale_items = []
 
     # sale URL with date
-    # sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByPage/Index/?Breadcrumb=Weekly+Ad&StoreID={store_id}&PromotionCode=Publix-{formattedDate}&PromotionViewMode=1&PageNumber={page}"
+    sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByPage/Index/?Breadcrumb=Weekly+Ad&StoreID={store_id}&PromotionCode=Publix-{formattedDate}&PromotionViewMode=1&PageNumber={page}"
 
     # sale URL without date    
-    sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByPage?PromotionID=159707&PromotionViewMode=1&StoreID={store_id}&BreadCrumb=Weekly+Ad&SneakPeek=N&PageNumber={page}"
+    # sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByPage?PromotionID=159707&PromotionViewMode=1&StoreID={store_id}&BreadCrumb=Weekly+Ad&SneakPeek=N&PageNumber={page}"
 
     res = requests.get(sale_url, headers=headers)
     res.raise_for_status  # raise an exception if there is a problem downloading URL text
