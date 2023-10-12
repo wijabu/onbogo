@@ -6,6 +6,7 @@ from flask import jsonify
 
 from . import notify
 from . import sales
+from . import date
 from . import db
 
 
@@ -14,11 +15,16 @@ def run(user):
         store_id = user["my_store"]["store_id"]
         
         if store_id:
+            # check if today is Thursday; if not, decrement until date found for most recent Thursday
+            formattedDate = date.isTodayThursday(1)
+            
             # call URL for each page of weekly ad + build list of user's sale items
-            pages = sales.get_pages(user)
+            pages = sales.get_pages(user, formattedDate)
             logging.debug(f"Pages count: {pages}")
+            
+            # call each page in sales ad to compare against user's grocery list
             for page in range(1, pages+1):
-                my_sale_items = sales.find_sales(user, page)
+                my_sale_items = sales.find_sales(user, page, formattedDate)
 
             logging.debug(f"my_sale_items for {user['username']}: {my_sale_items}")
             
@@ -45,7 +51,8 @@ def run(user):
                     alert_msg = alert_template.strip()
                 else:
                     alert_msg = f"Hello, {user['username']}, here are your sales...\n" + "\n*****\nNOTE: This is an incomplete list. To see all sales, visit onbogo.onrender.com \n***** " + "\n".join(msg_items[:28])
-                
+
+            # send notification(s) to user(s)    
             notify.send_alert(alert_msg, user=user)
             
             logging.debug(f"Notifications sent to {user['username']}!")

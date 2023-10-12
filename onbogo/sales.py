@@ -14,9 +14,6 @@ logging.basicConfig(
 
 # logging.disable(logging.CRITICAL) # this code disables logging for the program
 
-today = date.today()
-formattedDate = today.strftime("%y%m%d")
-
 testUser = {
     "username":"testUser",
     "email":"testUser@gmail.com",
@@ -33,15 +30,13 @@ all_sale_items = []
 headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"}
 
 
-def get_pages(user):
+def get_pages(user, formattedDate):
     logging.debug("initatite: get_pages")
     store_id = user["my_store"]["store_id"]
 
     # sale URL with date
     sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByPage/Index/?Breadcrumb=Weekly+Ad&StoreID={store_id}&PromotionCode=Publix-{formattedDate}&PromotionViewMode=1"
 
-    # sale URL without date    
-    # sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByPage?PromotionID=159707&PromotionViewMode=1&StoreID={store_id}&BreadCrumb=Weekly+Ad&SneakPeek=N&PageNumber=1"
     
     res = requests.get(sale_url, headers=headers)
     res.raise_for_status  # raise an exception if there is a problem downloading URL text
@@ -51,14 +46,16 @@ def get_pages(user):
     
     for page in pages_div:
         page_count = page.find("div", {"class": "pageXofY"}).text.strip()
+        # logging.debug(f"page_count: {page_count}")
         page_list = page_count.split()
+        # logging.debug(f"page_list: {page_list}")
         pages = int(page_list[-1])
 
         logging.debug(f"pages: {pages}")
         return pages
 
 
-def find_sales(user, page):    
+def find_sales(user, page, formattedDate):    
     logging.debug("initatite: find_sales")
     store_id = user["my_store"]["store_id"]
     favs = user["favs"]
@@ -68,9 +65,6 @@ def find_sales(user, page):
 
     # sale URL with date
     sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByPage/Index/?Breadcrumb=Weekly+Ad&StoreID={store_id}&PromotionCode=Publix-{formattedDate}&PromotionViewMode=1&PageNumber={page}"
-
-    # sale URL without date    
-    # sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByPage?PromotionID=159707&PromotionViewMode=1&StoreID={store_id}&BreadCrumb=Weekly+Ad&SneakPeek=N&PageNumber={page}"
 
     res = requests.get(sale_url, headers=headers)
     res.raise_for_status  # raise an exception if there is a problem downloading URL text
