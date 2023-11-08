@@ -9,14 +9,28 @@ from . import sales
 from . import date
 from . import db
 
+logging.basicConfig(
+    # filename='myLogFile.txt', # use this to write logs to specified file
+    level=logging.DEBUG,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
+
 
 def run(user):
     try:
         store_id = user["my_store"]["store_id"]
+        logging.debug(f"store_id: {store_id}")
         
         if store_id:
             # check if today is Thursday; if not, decrement until date found for most recent Thursday
             formattedDate = date.isTodayThursday(1)
+
+            if formattedDate is None:
+                logging.debug(f"formattedDate is set to 'None'")
+            elif formattedDate == "":
+                logging.debug(f"formattedDate is empty string")
+            else:
+                logging.debug(f"formattedDate: {formattedDate}")
             
             # call URL for each page of weekly ad + build list of user's sale items
             pages = sales.get_pages(user, formattedDate)
