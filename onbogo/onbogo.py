@@ -33,7 +33,8 @@ def run(user):
                 logging.debug(f"formattedDate: {formattedDate}")
             
             # call URL for each page of weekly ad + build list of user's sale items
-            pages = sales.get_pages(user, formattedDate)
+            page = 1;
+            pages = sales.get_pages(user, page, formattedDate)
             logging.debug(f"Pages count: {pages}")
             
             # call each page in sales ad to compare against user's grocery list
