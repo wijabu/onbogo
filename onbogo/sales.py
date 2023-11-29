@@ -26,6 +26,8 @@ all_titles = []
 all_deals = []
 all_info = []
 all_sale_items = []
+store_id = ""
+page = ""
 
 # temporary URL for thanksgiving holiday
 sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByPage/Index/?Breadcrumb=Weekly+Ad&StoreID={store_id}&PromotionCode=Publix-231124&PromotionViewMode=1&PageNumber={page}"
