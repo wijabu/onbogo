@@ -53,7 +53,8 @@ def get_weekly_ad(store_id):
                 weekly_ad = sale_base + sale_path
                 print("weekly_ad: ")
                 print(weekly_ad)
-                return weekly_ad
+                
+    return weekly_ad
 
     
     
