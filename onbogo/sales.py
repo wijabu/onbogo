@@ -30,18 +30,54 @@ all_sale_items = []
 headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"}
 
 
-def get_pages(user, page, formattedDate):
-    logging.debug("initatite: get_pages")
-    store_id = user["my_store"]["store_id"]
+def get_weekly_ad(store_id):
+    logging.debug("initatite: get_weekly_ad")
 
-    # sale URL with date
-    sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByPage/Index/?Breadcrumb=Weekly+Ad&StoreID={store_id}&PromotionCode=Publix-{formattedDate}&PromotionViewMode=1"
+    weekly_ad_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/Entry/LandingContent?storeid={store_id}&sneakpeek=N&listingid=0#"
 
-    # temporary URL for thanksgiving holiday
-    # sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByPage/Index/?Breadcrumb=Weekly+Ad&StoreID={store_id}&PromotionCode=Publix-231124&PromotionViewMode=1&PageNumber={page}"
+    res = requests.get(weekly_ad_url, headers=headers)
+    res.raise_for_status  # raise an exception if there is a problem downloading URL text
+    soup = bs4.BeautifulSoup(res.text, features="html.parser")
+
+    # find div for right column
+    promotion = soup.select("div.rightcolumn")
+    for el in promotion:
+        info = el.select("div.infoUnit")
+
+        for links in info:
+            a_tags = links.findAll("a", recursive=False)
+            
+            for link in a_tags:
+                sale_path = str(a_tags[0]["href"])
+                sale_base = "https://accessibleweeklyad.publix.com:443"
+                weekly_ad = sale_base + sale_path
+                # print("weekly_ad: ")
+                # print(weekly_ad)
+                return weekly_ad
 
     
-    res = requests.get(sale_url, headers=headers)
+    
+
+
+# def get_pages(user, page, sale_url):
+#     logging.debug("initatite: get_pages")
+#     store_id = user["my_store"]["store_id"]
+
+#     # sale URL with date
+#     sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByPage/Index/?Breadcrumb=Weekly+Ad&StoreID={store_id}&PromotionCode=Publix-{formattedDate}&PromotionViewMode=1"
+
+#     # temporary URL for thanksgiving holiday
+#     # sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByPage/Index/?Breadcrumb=Weekly+Ad&StoreID={store_id}&PromotionCode=Publix-231124&PromotionViewMode=1&PageNumber={page}"
+
+    
+#     res = requests.get(sale_url, headers=headers)
+
+
+def get_pages(user, page, weekly_ad):
+    logging.debug("initatite: get_pages")
+    store_id = user["my_store"]["store_id"]
+    
+    res = requests.get(weekly_ad, headers=headers)
     res.raise_for_status  # raise an exception if there is a problem downloading URL text
     soup = bs4.BeautifulSoup(res.text, features="html.parser")
 
@@ -58,7 +94,7 @@ def get_pages(user, page, formattedDate):
         return pages
 
 
-def find_sales(user, page, formattedDate):    
+def find_sales(user, page, weekly_ad):    
     logging.debug("initatite: find_sales")
     store_id = user["my_store"]["store_id"]
     favs = user["favs"]
@@ -67,12 +103,11 @@ def find_sales(user, page, formattedDate):
     my_sale_items = []
 
     # sale URL with date
-    sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByPage/Index/?Breadcrumb=Weekly+Ad&StoreID={store_id}&PromotionCode=Publix-{formattedDate}&PromotionViewMode=1&PageNumber={page}"
+    # sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByPage/Index/?Breadcrumb=Weekly+Ad&StoreID={store_id}&PromotionCode=Publix-{formattedDate}&PromotionViewMode=1&PageNumber={page}"
+    
+    sale_page = f"{weekly_ad}&PageNumber={page}"
 
-    # temporary URL for thanksgiving holiday
-    # sale_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/BrowseByPage/Index/?Breadcrumb=Weekly+Ad&StoreID={store_id}&PromotionCode=Publix-231124&PromotionViewMode=1&PageNumber={page}"
-
-    res = requests.get(sale_url, headers=headers)
+    res = requests.get(sale_page, headers=headers)
     res.raise_for_status  # raise an exception if there is a problem downloading URL text
     soup = bs4.BeautifulSoup(res.text, features="html.parser")
 
@@ -148,7 +183,8 @@ def find_sales(user, page, formattedDate):
 
 
 if __name__ == "__main__":
-    pass
+    store_id = "2500640"
+    get_weekly_ad(store_id)
     # pages = get_pages(testUser)
     # for page in range(1, pages+1):
     #     find_sales(testUser, page)

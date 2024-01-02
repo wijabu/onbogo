@@ -16,30 +16,49 @@ logging.basicConfig(
 )
 
 
+# def run(user):
+#     try:
+#         store_id = user["my_store"]["store_id"]
+#         logging.debug(f"store_id: {store_id}")
+        
+#         if store_id:
+#             # check if today is Thursday; if not, decrement until date found for most recent Thursday
+#             formattedDate = date.isTodayThursday(1)
+
+#             if formattedDate is None:
+#                 logging.debug(f"formattedDate is set to 'None'")
+#             elif formattedDate == "":
+#                 logging.debug(f"formattedDate is empty string")
+#             else:
+#                 logging.debug(f"formattedDate: {formattedDate}")
+            
+#             # call URL for each page of weekly ad + build list of user's sale items
+#             page = 1;
+#             pages = sales.get_pages(user, page, formattedDate)
+#             logging.debug(f"Pages count: {pages}")
+            
+#             # call each page in sales ad to compare against user's grocery list
+#             for page in range(1, pages+1):
+#                 my_sale_items = sales.find_sales(user, page, formattedDate)
+
+
 def run(user):
     try:
         store_id = user["my_store"]["store_id"]
         logging.debug(f"store_id: {store_id}")
         
         if store_id:
-            # check if today is Thursday; if not, decrement until date found for most recent Thursday
-            formattedDate = date.isTodayThursday(1)
-
-            if formattedDate is None:
-                logging.debug(f"formattedDate is set to 'None'")
-            elif formattedDate == "":
-                logging.debug(f"formattedDate is empty string")
-            else:
-                logging.debug(f"formattedDate: {formattedDate}")
+            # scrape weekly_ad link from main page
+            weekly_ad = sales.get_weekly_ad(store_id)
             
             # call URL for each page of weekly ad + build list of user's sale items
-            page = 1;
-            pages = sales.get_pages(user, page, formattedDate)
+            pages = sales.get_pages(user, weekly_ad)
             logging.debug(f"Pages count: {pages}")
             
             # call each page in sales ad to compare against user's grocery list
+            # page = 1
             for page in range(1, pages+1):
-                my_sale_items = sales.find_sales(user, page, formattedDate)
+                my_sale_items = sales.find_sales(user, page, weekly_ad)
 
             logging.debug(f"my_sale_items for {user['username']}: {my_sale_items}")
             
