@@ -74,7 +74,7 @@ def get_weekly_ad(store_id):
 #     res = requests.get(sale_url, headers=headers)
 
 
-def get_pages(user, page, weekly_ad):
+def get_pages(user, weekly_ad):
     logging.debug("initatite: get_pages")
     store_id = user["my_store"]["store_id"]
     
