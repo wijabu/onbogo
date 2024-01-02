@@ -51,8 +51,8 @@ def get_weekly_ad(store_id):
                 sale_path = str(a_tags[0]["href"])
                 sale_base = "https://accessibleweeklyad.publix.com:443"
                 weekly_ad = sale_base + sale_path
-                # print("weekly_ad: ")
-                # print(weekly_ad)
+                print("weekly_ad: ")
+                print(weekly_ad)
                 return weekly_ad
 
     

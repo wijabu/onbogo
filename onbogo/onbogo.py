@@ -50,6 +50,7 @@ def run(user):
         if store_id:
             # scrape weekly_ad link from main page
             weekly_ad = sales.get_weekly_ad(store_id)
+            logging.debug(f"weekly_ad: {weekly_ad}")
             
             # call URL for each page of weekly ad + build list of user's sale items
             pages = sales.get_pages(user, weekly_ad)
