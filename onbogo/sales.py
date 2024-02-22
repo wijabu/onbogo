@@ -16,9 +16,9 @@ logging.basicConfig(
 
 testUser = {
     "username":"testUser",
-    "email":"testUser@gmail.com",
+    "email":"jameswillish@gmail.com",
     "sale_id":5232540,
-    "my_store":{"store_id":2501054},
+    "my_store":{"store_id":2500640},
     "favs":["bacon","oatmilk","Sweet Baby","wine","sub"]
     }
 
@@ -51,8 +51,8 @@ def get_weekly_ad(store_id):
                 sale_path = str(a_tags[0]["href"])
                 sale_base = "https://accessibleweeklyad.publix.com:443"
                 weekly_ad = sale_base + sale_path
-                print("weekly_ad: ")
-                print(weekly_ad)
+                # print("weekly_ad: ")
+                # print(weekly_ad)
                 
     return weekly_ad
 
@@ -184,8 +184,9 @@ def find_sales(user, page, weekly_ad):
 
 
 if __name__ == "__main__":
-    store_id = "2500640"
-    get_weekly_ad(store_id)
-    # pages = get_pages(testUser)
-    # for page in range(1, pages+1):
-    #     find_sales(testUser, page)
+    store_id = testUser["my_store"]["store_id"]
+    weekly_ad = get_weekly_ad(store_id)
+    pages = get_pages(testUser, weekly_ad)
+    for page in range(1, pages+1):
+        my_sale_items = find_sales(testUser, page, weekly_ad)
+    print(my_sale_items)

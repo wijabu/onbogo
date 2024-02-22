@@ -16,32 +16,6 @@ logging.basicConfig(
 )
 
 
-# def run(user):
-#     try:
-#         store_id = user["my_store"]["store_id"]
-#         logging.debug(f"store_id: {store_id}")
-        
-#         if store_id:
-#             # check if today is Thursday; if not, decrement until date found for most recent Thursday
-#             formattedDate = date.isTodayThursday(1)
-
-#             if formattedDate is None:
-#                 logging.debug(f"formattedDate is set to 'None'")
-#             elif formattedDate == "":
-#                 logging.debug(f"formattedDate is empty string")
-#             else:
-#                 logging.debug(f"formattedDate: {formattedDate}")
-            
-#             # call URL for each page of weekly ad + build list of user's sale items
-#             page = 1;
-#             pages = sales.get_pages(user, page, formattedDate)
-#             logging.debug(f"Pages count: {pages}")
-            
-#             # call each page in sales ad to compare against user's grocery list
-#             for page in range(1, pages+1):
-#                 my_sale_items = sales.find_sales(user, page, formattedDate)
-
-
 def run(user):
     try:
         store_id = user["my_store"]["store_id"]
@@ -82,10 +56,12 @@ def run(user):
 
                 alert_template = f"Hello, {user['username']}, here are your sales from onbogo.onrender.com\n" + "\n".join(msg_items)
                 
-                if len(alert_template) < 550:
-                    alert_msg = alert_template.strip()
-                else:
-                    alert_msg = f"Hello, {user['username']}, here are your sales...\n" + "\n*****\nNOTE: This is an incomplete list. To see all sales, visit onbogo.onrender.com \n***** " + "\n".join(msg_items[:28])
+                alert_msg = alert_template.strip()
+
+                # if len(alert_template) < 550:
+                #     alert_msg = alert_template.strip()
+                # else:
+                #     alert_msg = f"Hello, {user['username']}, here are your sales...\n" + "\n*****\nNOTE: This is an incomplete list. To see all sales, visit onbogo.onrender.com \n***** " + "\n".join(msg_items[:28])
 
             # send notification(s) to user(s)    
             notify.send_alert(alert_msg, user=user)
