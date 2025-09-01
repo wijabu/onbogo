@@ -1,7 +1,6 @@
 #!usr/bin/env python3
 
 import logging
-
 from flask import jsonify
 
 from . import notify
@@ -22,77 +21,72 @@ def run(user):
         logging.debug(f"store_id: {store_id}")
         
         if store_id:
-            # scrape weekly_ad link from main page
-            weekly_ad = sales.get_weekly_ad(store_id)
-
-            weekly_ad = sales.get_weekly_ad(store_id)
-            if not weekly_ad:
+            # launch Selenium + go to weekly ad
+            driver = sales.get_weekly_ad(store_id)
+            if not driver:
                 logging.error("No weekly ad found for store %s", store_id)
                 return jsonify(error="No weekly ad available for this store."), 404
 
-            logging.debug(f"weekly_ad: {weekly_ad}")
-            
-            # call URL for each page of weekly ad + build list of user's sale items
-            pages = sales.get_pages(user, weekly_ad)
+            # detect total pages
+            pages = sales.get_pages(user, driver)
             logging.debug(f"Pages count: {pages}")
             
-            # call each page in sales ad to compare against user's grocery list
-            # page = 1
-            for page in range(1, pages+1):
-                my_sale_items = sales.find_sales(user, page, weekly_ad)
+            # gather sale items across all pages
+            all_sale_items = []
+            for page in range(1, pages + 1):
+                page_items = sales.find_sales(user, page, driver)
+                all_sale_items.extend(page_items)
 
-            logging.debug(f"my_sale_items for {user['username']}: {my_sale_items}")
+            logging.debug(f"my_sale_items for {user['username']}: {all_sale_items}")
             
-            if my_sale_items == []:
+            if not all_sale_items:
                 alert_msg = f"Hi {user['username']}, No sale items matching your list this week."
             else:
-                # generate single list for titles, deals, and info of sale items
-                list_items = []
-                msg_items = []
-                for item in my_sale_items:
-                    list_items.append(list(item.values()))
-                
-                for item in list_items:
-                    for val in item: 
-                        msg_items.append(val)
+                # flatten items into a message
+                list_items = [list(item.values()) for item in all_sale_items]
+                msg_items = [val for sub in list_items for val in sub]
 
-                # add line break into list every nth element to break up mobile notification message
-                for i in range (0,len(msg_items)):
-                    msg_items.insert(i*4,"\n")
+                # insert line breaks for readability
+                for i in range(0, len(msg_items)):
+                    msg_items.insert(i * 4, "\n")
 
-                alert_template = f"Hello, {user['username']}, here are your sales from onbogo.onrender.com\n" + "\n".join(msg_items)
-                
+                alert_template = (
+                    f"Hello, {user['username']}, here are your sales from onbogo.onrender.com\n"
+                    + "\n".join(msg_items)
+                )
                 alert_msg = alert_template.strip()
 
-                # if len(alert_template) < 550:
-                #     alert_msg = alert_template.strip()
-                # else:
-                #     alert_msg = f"Hello, {user['username']}, here are your sales...\n" + "\n*****\nNOTE: This is an incomplete list. To see all sales, visit onbogo.onrender.com \n***** " + "\n".join(msg_items[:28])
-
-            # send notification(s) to user(s)    
+            # send notification(s)
             notify.send_alert(alert_msg, user=user)
             
             logging.debug(f"Notifications sent to {user['username']}!")
             logging.debug(f"Notifications length: {len(alert_msg)}!")
-            # logging.debug(alert_msg)
 
-            return my_sale_items
+            return all_sale_items
         
         else:
-            print(f"No store saved to profile for user: {user['_id']}. Unable to find sales.")
-        
-    except:
+            logging.warning(f"No store saved to profile for user: {user['_id']}. Unable to find sales.")
+            return jsonify(error="No store found for this user."), 400
+
+    except Exception as e:
+        logging.error(f"App run error: {e}", exc_info=True)
         return jsonify(error="Unable to run app with this user. Verify required data found in user profile."), 400
+
+    finally:
+        # make sure Selenium driver closes even on error
+        try:
+            driver.quit()
+            logging.debug("Selenium driver closed.")
+        except Exception:
+            pass
 
 
 def run_schedule():
-    # ALL_USERS = db.users.find({"zip":"32789"})
     ALL_USERS = db.users.find({})
-
-    print(ALL_USERS)
+    logging.debug(f"Running schedule for {ALL_USERS.count()} users")
 
     for user in ALL_USERS:
-        if user["my_store"]["store_id"] and user['favs']:
+        if user.get("my_store", {}).get("store_id") and user.get("favs"):
             run(user)
 
 

@@ -1,68 +1,119 @@
-# sales.py
+import logging
+import time
+
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.chrome import ChromeDriverManager
-import time
 
-# Publix weekly ad URL
-PUBLIX_WEEKLY_AD_URL = "https://www.publix.com/savings/weekly-ad/view-all"
 
-def get_weekly_ad_products():
+def _init_driver():
+    """Initialize a headless Chrome WebDriver (Render-compatible)."""
+    chrome_options = Options()
+    chrome_options.add_argument("--headless=new")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument("--window-size=1920x1080")
+
+    driver = webdriver.Chrome(options=chrome_options)
+    return driver
+
+
+def get_weekly_ad(store_id: str):
     """
-    Scrapes Publix weekly ad products using Selenium.
-    Returns a list of dictionaries with keys: title, price, savings.
+    Opens the Publix Weekly Ad page for a given store_id.
+    Returns a WebDriver object positioned at the weekly ad.
     """
+    url = f"https://www.publix.com/savings/weekly-ad/view-all?storeid={store_id}"
+    logging.debug(f"Opening weekly ad URL: {url}")
 
-    # Configure headless Chrome
-    options = webdriver.ChromeOptions()
-    options.add_argument("--headless")
-    options.add_argument("--disable-gpu")
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
+    driver = _init_driver()
+    driver.get(url)
 
-    # Initialize WebDriver
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-    driver.get(PUBLIX_WEEKLY_AD_URL)
+    try:
+        # Wait for product cards to load
+        WebDriverWait(driver, 15).until(
+            EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".weekly-ad__product"))
+        )
+        logging.debug("Weekly ad products loaded successfully.")
+    except Exception as e:
+        logging.error(f"Weekly ad failed to load: {e}")
+        driver.quit()
+        return None
 
-    # Wait for product cards to appear
-    wait = WebDriverWait(driver, 15)
-    wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".card-product")))
+    return driver
 
-    # Scroll to bottom to load lazy-loaded products
-    last_height = driver.execute_script("return document.body.scrollHeight")
-    while True:
-        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        time.sleep(2)
-        new_height = driver.execute_script("return document.body.scrollHeight")
-        if new_height == last_height:
-            break
-        last_height = new_height
 
-    # Extract products
-    products = driver.find_elements(By.CSS_SELECTOR, ".card-product")
-    ad_items = []
+def get_pages(user, driver):
+    """
+    Detect how many pages of products exist.
+    Returns int number of pages (defaults to 1 if no pagination).
+    """
+    try:
+        pagination = driver.find_elements(By.CSS_SELECTOR, ".pagination__page")
+        if pagination:
+            pages = len(pagination)
+            logging.debug(f"Found {pages} pages in weekly ad.")
+            return pages
+        else:
+            logging.debug("No pagination found, defaulting to 1 page.")
+            return 1
+    except Exception as e:
+        logging.error(f"Error detecting pages: {e}")
+        return 1
 
-    for product in products:
-        try:
-            title = product.find_element(By.CSS_SELECTOR, ".card-product__title").text
-        except:
-            title = ""
-        try:
-            price = product.find_element(By.CSS_SELECTOR, ".card-product__price").text
-        except:
-            price = ""
-        try:
-            savings = product.find_element(By.CSS_SELECTOR, ".card-product__savings").text
-        except:
-            savings = ""
-        ad_items.append({
-            "title": title,
-            "price": price,
-            "savings": savings
-        })
 
-    driver.quit()
-    return ad_items
+def find_sales(user, page: int, driver):
+    """
+    Scrape a single page of the weekly ad for sales matching user's favorites.
+    Returns a list of dicts {title, price, details}.
+    """
+    sale_items = []
+
+    try:
+        # If pagination exists, click to page
+        if page > 1:
+            try:
+                page_button = driver.find_element(
+                    By.XPATH, f"//button[contains(@class,'pagination__page') and text()='{page}']"
+                )
+                page_button.click()
+                time.sleep(2)  # wait for products to load
+            except Exception as e:
+                logging.warning(f"Could not navigate to page {page}: {e}")
+
+        products = driver.find_elements(By.CSS_SELECTOR, ".weekly-ad__product")
+
+        favs = [f.lower() for f in user.get("favs", [])]
+
+        for product in products:
+            try:
+                title = product.find_element(By.CSS_SELECTOR, ".weekly-ad__product-title").text.strip()
+            except:
+                title = "Unknown Item"
+
+            try:
+                price = product.find_element(By.CSS_SELECTOR, ".weekly-ad__product-price").text.strip()
+            except:
+                price = "No Price"
+
+            try:
+                details = product.find_element(By.CSS_SELECTOR, ".weekly-ad__product-promo").text.strip()
+            except:
+                details = ""
+
+            # Only include if matches user favorites
+            if any(fav in title.lower() for fav in favs):
+                sale_items.append({
+                    "title": title,
+                    "price": price,
+                    "details": details,
+                })
+
+        logging.debug(f"Found {len(sale_items)} sale items on page {page}.")
+    except Exception as e:
+        logging.error(f"Error scraping page {page}: {e}")
+
+    return sale_items
