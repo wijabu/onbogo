@@ -14,6 +14,9 @@ def _init_driver():
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--window-size=1920x1080")
 
+    # Add this to avoid port conflicts
+    chrome_options.add_argument("--remote-debugging-port=0")
+
     # Create a unique temporary directory for user data
     user_data_dir = tempfile.mkdtemp()
     chrome_options.add_argument(f"--user-data-dir={user_data_dir}")
