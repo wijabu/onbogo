@@ -9,8 +9,15 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 
+import os
+import uuid
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+
 def _init_driver():
     chrome_options = Options()
+    chrome_options.binary_location = "/opt/render/.cache/selenium/chrome/linux64/139.0.7258.154/chrome"
+
     chrome_options.add_argument("--headless=new")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
@@ -19,6 +26,8 @@ def _init_driver():
     chrome_options.add_argument("--remote-debugging-port=0")
     chrome_options.add_argument("--single-process")
     chrome_options.add_argument("--disable-software-rasterizer")
+    chrome_options.add_argument("--disable-background-networking")
+    chrome_options.add_argument("--no-first-run")
 
     # Create a truly unique user-data-dir inside /tmp
     unique_tmp_dir = f"/tmp/chrome-user-data-{uuid.uuid4()}"
