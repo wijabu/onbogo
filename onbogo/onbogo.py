@@ -24,6 +24,12 @@ def run(user):
         if store_id:
             # scrape weekly_ad link from main page
             weekly_ad = sales.get_weekly_ad(store_id)
+
+            weekly_ad = sales.get_weekly_ad(store_id)
+            if not weekly_ad:
+                logging.error("No weekly ad found for store %s", store_id)
+                return jsonify(error="No weekly ad available for this store."), 404
+
             logging.debug(f"weekly_ad: {weekly_ad}")
             
             # call URL for each page of weekly ad + build list of user's sale items
@@ -76,7 +82,7 @@ def run(user):
             print(f"No store saved to profile for user: {user['_id']}. Unable to find sales.")
         
     except:
-        return jsonify("ERROR: Unable to run app with this user. Verify required data found in user profile.", status=400)
+        return jsonify(error="Unable to run app with this user. Verify required data found in user profile."), 400
 
 
 def run_schedule():
