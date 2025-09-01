@@ -203,19 +203,40 @@ def find():
 
 # add my_sale_items
 
+# @views.route("/find_sales", methods=["GET", "POST"])
+# @login_required
+# def find_sales():
+#     user = session["user"]
+#     my_store = session["user"]["my_store"]
+
+#     try: 
+#         my_sale_items = onbogo.run(user=user)        
+#         session["my_sale_items"] = my_sale_items
+
+#         return render_template("sales.html", my_store=my_store)
+#     except:
+#         return render_template("load.html", my_store={})
+
 @views.route("/find_sales", methods=["GET", "POST"])
 @login_required
 def find_sales():
-    user = session["user"]
-    my_store = session["user"]["my_store"]
+    user = session.get("user", {})
+    my_store = user.get("my_store", {})
 
-    try: 
-        my_sale_items = onbogo.run(user=user)        
-        session["my_sale_items"] = my_sale_items
+    my_sale_items = []
 
-        return render_template("sales.html", my_store=my_store)
-    except:
-        return render_template("load.html", my_store={})
+    try:
+        # Run scraping/processing function
+        my_sale_items = onbogo.run(user=user)
+
+    except Exception as e:
+        logging.error("Error in /find_sales route while scraping:", exc_info=True)
+        # If partial results exist, we still render them
+        if not my_sale_items:
+            my_sale_items = []
+
+    # Always render the sales page with whatever results were obtained
+    return render_template("sales.html", my_store=my_store, my_sale_items=my_sale_items)
 
 
 @views.route("/locate", methods=["GET", "POST"])
