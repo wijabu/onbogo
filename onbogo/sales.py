@@ -16,6 +16,9 @@ def _init_driver():
 
     # Add this to avoid port conflicts
     chrome_options.add_argument("--remote-debugging-port=0")
+    chrome_options.add_argument("--single-process")
+    chrome_options.add_argument("--disable-software-rasterizer")
+
 
     # Create a unique temporary directory for user data
     user_data_dir = tempfile.mkdtemp()
