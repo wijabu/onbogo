@@ -215,7 +215,7 @@ def find_sales():
 
         return render_template("sales.html", my_store=my_store)
     except:
-        return render_template("load.html")
+        return render_template("load.html", my_store={})
 
 
 @views.route("/locate", methods=["GET", "POST"])
