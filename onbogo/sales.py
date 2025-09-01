@@ -4,21 +4,19 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.options import Options
 
 def _init_driver():
-    """
-    Initialize a headless Chrome driver with a unique temporary profile
-    to avoid 'user data directory already in use' errors.
-    """
-    tmp_profile = tempfile.mkdtemp()  # unique temp folder for each session
-
-    chrome_options = webdriver.ChromeOptions()
+    chrome_options = Options()
+    # Headless mode for Render / server environment
     chrome_options.add_argument("--headless=new")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--disable-gpu")
-    chrome_options.add_argument(f"--user-data-dir={tmp_profile}")
     chrome_options.add_argument("--window-size=1920x1080")
+
+    # Specify Chrome binary if needed (Selenium Manager should handle this)
+    # chrome_options.binary_location = "/opt/render/.cache/selenium/chrome/linux64/<version>/chrome"
 
     driver = webdriver.Chrome(options=chrome_options)
     return driver
