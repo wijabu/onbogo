@@ -1,5 +1,8 @@
 import logging
 import tempfile
+import os
+import uuid
+
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -13,16 +16,14 @@ def _init_driver():
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--window-size=1920x1080")
-
-    # Add this to avoid port conflicts
     chrome_options.add_argument("--remote-debugging-port=0")
     chrome_options.add_argument("--single-process")
     chrome_options.add_argument("--disable-software-rasterizer")
 
-
-    # Create a unique temporary directory for user data
-    user_data_dir = tempfile.mkdtemp()
-    chrome_options.add_argument(f"--user-data-dir={user_data_dir}")
+    # Create a truly unique user-data-dir inside /tmp
+    unique_tmp_dir = f"/tmp/chrome-user-data-{uuid.uuid4()}"
+    os.makedirs(unique_tmp_dir, exist_ok=True)
+    chrome_options.add_argument(f"--user-data-dir={unique_tmp_dir}")
 
     driver = webdriver.Chrome(options=chrome_options)
     return driver
