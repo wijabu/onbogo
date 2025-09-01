@@ -1,6 +1,7 @@
 import logging
 import time
 
+import tempfile
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -16,6 +17,7 @@ def _init_driver():
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--window-size=1920x1080")
+    chrome_options.add_argument(f"--user-data-dir={tempfile.mkdtemp()}")
 
     driver = webdriver.Chrome(options=chrome_options)
     return driver

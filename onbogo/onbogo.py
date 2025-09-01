@@ -62,7 +62,7 @@ def run(user):
             logging.debug(f"Notifications sent to {user['username']}!")
             logging.debug(f"Notifications length: {len(alert_msg)}!")
 
-            return all_sale_items
+            return jsonify(all_sale_items), 200
         
         else:
             logging.warning(f"No store saved to profile for user: {user['_id']}. Unable to find sales.")
