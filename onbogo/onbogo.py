@@ -22,7 +22,7 @@ def run(user):
         
         if store_id:
             # launch Selenium + go to weekly ad
-            driver = sales.get_weekly_ad(store_id)
+            driver = sales.get_weekly_ad(store_id, user)
             if not driver:
                 logging.error("No weekly ad found for store %s", store_id)
                 return jsonify(error="No weekly ad available for this store."), 404
