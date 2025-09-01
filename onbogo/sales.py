@@ -28,7 +28,7 @@ def _init_driver():
     return driver
 
 
-def scrape_weekly_ad(store_id: str, user: dict, max_retries: int = 3):
+def get_weekly_ad(store_id: str, user: dict, max_retries: int = 3):
     """
     Scrape all pages of Publix Weekly Ad for a given store_id and user favorites.
     Returns a list of dicts {title, price, details}.
