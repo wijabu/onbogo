@@ -3,13 +3,13 @@ import time
 import tempfile
 import shutil
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, StaleElementReferenceException, NoSuchElementException
 
 def _init_driver():
+    """Initialize Chrome with a truly unique temp profile per run."""
     temp_dir = tempfile.mkdtemp()
 
     chrome_options = webdriver.ChromeOptions()
@@ -18,10 +18,10 @@ def _init_driver():
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--window-size=1920x1080")
-    chrome_options.add_argument(f"--user-data-dir={temp_dir}")
+    chrome_options.add_argument(f"--user-data-dir={temp_dir}")  # unique per run
 
-    driver_path = "/opt/render/.cache/selenium/chromedriver/linux64/139.0.7258.154/chromedriver"
-    driver = webdriver.Chrome(service=Service(driver_path), options=chrome_options)
+    # Selenium Manager automatically finds/installs correct driver
+    driver = webdriver.Chrome(options=chrome_options)
 
     class DriverWrapper:
         def __init__(self, driver, temp_dir):
@@ -41,6 +41,7 @@ def _init_driver():
 
 
 def get_weekly_ad(store_id: str, user: dict, max_retries: int = 3):
+    """Scrape Publix weekly ad for user favorites."""
     url = f"https://www.publix.com/savings/weekly-ad/view-all?storeid={store_id}"
     logging.debug(f"Opening weekly ad URL: {url}")
 
@@ -71,7 +72,6 @@ def get_weekly_ad(store_id: str, user: dict, max_retries: int = 3):
                 try:
                     if page > 1:
                         try:
-                            # Navigate to next page
                             page_button = driver.find_element(
                                 By.XPATH, f"//button[contains(@class,'pagination__page') and text()='{page}']"
                             )
@@ -85,7 +85,6 @@ def get_weekly_ad(store_id: str, user: dict, max_retries: int = 3):
                         except Exception as e:
                             logging.warning(f"Navigation to page {page} failed: {e}")
 
-                    # Scrape products
                     products = driver.find_elements(By.CSS_SELECTOR, ".weekly-ad__product")
                     for product in products:
                         try:
