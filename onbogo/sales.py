@@ -32,11 +32,12 @@ headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleW
 
 def get_weekly_ad(store_id):
     logging.debug("initatite: get_weekly_ad")
+    weekly_ad = None
 
     weekly_ad_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility/Entry/LandingContent?storeid={store_id}&sneakpeek=N&listingid=0#"
 
     res = requests.get(weekly_ad_url, headers=headers)
-    res.raise_for_status  # raise an exception if there is a problem downloading URL text
+    res.raise_for_status()  # raise an exception if there is a problem downloading URL text
     soup = bs4.BeautifulSoup(res.text, features="html.parser")
 
     # find div for right column
