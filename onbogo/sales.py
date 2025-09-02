@@ -12,15 +12,12 @@ from selenium.webdriver.chrome.service import Service
 
 
 def _init_driver():
-    logging.debug(f"Chrome binary found: {shutil.which('google-chrome')}")
+    logging.debug(f"Chromium binary found: {shutil.which('chromium')}")
     logging.debug(f"ChromeDriver found: {shutil.which('chromedriver')}")
 
     chrome_options = Options()
+    chrome_options.binary_location = shutil.which("chromium") or "/usr/bin/chromium"
 
-    # Explicitly set Chrome binary location
-    chrome_options.binary_location = os.getenv("CHROME_BIN", "/usr/bin/google-chrome")
-
-    # Add Chrome flags for headless operation
     chrome_options.add_argument("--headless=new")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
@@ -32,20 +29,13 @@ def _init_driver():
     chrome_options.add_argument("--disable-background-networking")
     chrome_options.add_argument("--no-first-run")
 
-    # Create unique user data directory
     unique_tmp_dir = f"/tmp/chrome-user-data-{uuid.uuid4()}"
     os.makedirs(unique_tmp_dir, exist_ok=True)
     chrome_options.add_argument(f"--user-data-dir={unique_tmp_dir}")
 
-    # Set desired capabilities
-    chrome_options.set_capability("browserName", "chrome")
-
-    # Initialize ChromeDriver with explicit path
-    chromedriver_path = shutil.which("chromedriver") or "/usr/local/bin/chromedriver"
+    chromedriver_path = shutil.which("chromedriver") or "/usr/bin/chromedriver"
     service = Service(chromedriver_path)
     driver = webdriver.Chrome(service=service, options=chrome_options)
-
-    # Attach temp dir to driver for cleanup
     driver._user_data_dir = unique_tmp_dir
     return driver
 
