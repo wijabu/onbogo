@@ -16,7 +16,13 @@ ENV CHROME_BIN=/usr/bin/google-chrome
 ENV PATH="/usr/bin:/usr/local/bin:$PATH"
 
 # Diagnostic step to verify installation
-RUN echo "PATH=$PATH" &&     ls -l /usr/bin/google-chrome &&     ls -l /usr/bin/chromedriver &&     which google-chrome &&     which chromedriver &&     google-chrome --version &&     chromedriver --version
+RUN echo "PATH=$PATH" && \
+    ls -l /usr/bin/google-chrome && \
+    ls -l /usr/bin/chromedriver && \
+    which google-chrome && \
+    which chromedriver && \
+    google-chrome --version && \
+    chromedriver --version
 
 # Install Python dependencies
 COPY requirements.txt .
