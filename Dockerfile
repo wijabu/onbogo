@@ -24,12 +24,15 @@ RUN apt-get update && apt-get install -y \
     xdg-utils \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Chrome (stable version 117)
+# Install Chrome (stable version)
 RUN curl -Lo /tmp/chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
     apt-get install -y /tmp/chrome.deb && \
     rm /tmp/chrome.deb
 
-# Install matching Chromedriver
+# Symlink Chrome to /usr/bin to ensure it's in PATH
+RUN ln -s /opt/google/chrome/google-chrome /usr/bin/google-chrome
+
+# Install matching ChromeDriver
 RUN CHROME_VERSION=$(google-chrome --version | awk '{print $NF}' | cut -d. -f1) && \
     DRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION") && \
     curl -Lo /tmp/chromedriver.zip "https://chromedriver.storage.googleapis.com/${DRIVER_VERSION}/chromedriver_linux64.zip" && \
@@ -37,17 +40,19 @@ RUN CHROME_VERSION=$(google-chrome --version | awk '{print $NF}' | cut -d. -f1) 
     chmod +x /usr/local/bin/chromedriver && \
     rm /tmp/chromedriver.zip
 
+# Symlink ChromeDriver to /usr/bin to ensure it's in PATH
+RUN ln -s /usr/local/bin/chromedriver /usr/bin/chromedriver
+
 # Set environment variables
 ENV CHROME_BIN=/usr/bin/google-chrome
-ENV CHROMEDRIVER_PATH=/usr/local/bin/chromedriver
-ENV PATH="/usr/local/bin:$PATH"
+ENV PATH="/usr/bin:/usr/local/bin:$PATH"
+
+# Verify installation
+RUN google-chrome --version && chromedriver --version
 
 # Install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-
-# TEMP
-RUN google-chrome --version && chromedriver --version
 
 # Copy your app code
 COPY . /app
