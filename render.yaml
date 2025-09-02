@@ -1,3 +1,4 @@
+
 services:
   - type: web
     name: flask-selenium-app
@@ -5,3 +6,5 @@ services:
     plan: free
     dockerfilePath: Dockerfile
     autoDeploy: true
+    buildCommand: ""  # Not needed for Docker
+    startCommand: ""  # CMD is defined in Dockerfile

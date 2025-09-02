@@ -1,4 +1,4 @@
-# Use an official Python base image
+# Use a lightweight Python base image
 FROM python:3.10-slim
 
 # Install system dependencies required by Chrome
@@ -24,15 +24,22 @@ RUN apt-get update && apt-get install -y \
     xdg-utils \
     && rm -rf /var/lib/apt/lists/*
 
-# Download Chrome for Testing
-RUN mkdir -p /opt/chrome && \
-    curl -Lo /tmp/chrome.zip https://storage.googleapis.com/chrome-for-testing-public/139.0.7258.154/linux64/chrome-linux64.zip && \
-    unzip /tmp/chrome.zip -d /opt/chrome && \
-    mv /opt/chrome/chrome-linux64 /opt/chrome/chrome && \
-    ln -s /opt/chrome/chrome/chrome /usr/bin/google-chrome
+# Install Chrome (stable version 117)
+RUN curl -Lo /tmp/chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
+    apt-get install -y /tmp/chrome.deb && \
+    rm /tmp/chrome.deb
 
-# Set environment variable for Chrome binary
+# Install matching Chromedriver
+RUN CHROME_VERSION=$(google-chrome --version | awk '{print $NF}' | cut -d. -f1) && \
+    DRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION") && \
+    curl -Lo /tmp/chromedriver.zip "https://chromedriver.storage.googleapis.com/${DRIVER_VERSION}/chromedriver_linux64.zip" && \
+    unzip /tmp/chromedriver.zip -d /usr/local/bin/ && \
+    chmod +x /usr/local/bin/chromedriver && \
+    rm /tmp/chromedriver.zip
+
+# Set environment variables
 ENV CHROME_BIN=/usr/bin/google-chrome
+ENV CHROMEDRIVER_PATH=/usr/local/bin/chromedriver
 
 # Install Python dependencies
 COPY requirements.txt .
