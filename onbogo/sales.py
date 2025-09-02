@@ -12,11 +12,11 @@ from selenium.webdriver.chrome.service import Service
 
 
 def _init_driver():
-    logging.debug(f"Chromium binary found: {shutil.which('chromium')}")
+    logging.debug(f"Chrome binary found: {shutil.which('google-chrome')}")
     logging.debug(f"ChromeDriver found: {shutil.which('chromedriver')}")
 
     chrome_options = Options()
-    chrome_options.binary_location = shutil.which("chromium") or "/usr/bin/chromium"
+    chrome_options.binary_location = shutil.which("google-chrome") or "/usr/bin/google-chrome"
 
     chrome_options.add_argument("--headless=new")
     chrome_options.add_argument("--no-sandbox")
@@ -33,7 +33,7 @@ def _init_driver():
     os.makedirs(unique_tmp_dir, exist_ok=True)
     chrome_options.add_argument(f"--user-data-dir={unique_tmp_dir}")
 
-    # Explicitly set browserName to "chrome"
+    # Set browserName to "chrome" to match driver expectations
     chrome_options.set_capability("browserName", "chrome")
 
     chromedriver_path = shutil.which("chromedriver") or "/usr/bin/chromedriver"
