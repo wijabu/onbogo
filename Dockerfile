@@ -40,6 +40,7 @@ RUN CHROME_VERSION=$(google-chrome --version | awk '{print $NF}' | cut -d. -f1) 
 # Set environment variables
 ENV CHROME_BIN=/usr/bin/google-chrome
 ENV CHROMEDRIVER_PATH=/usr/local/bin/chromedriver
+ENV PATH="/usr/local/bin:$PATH"
 
 # Install Python dependencies
 COPY requirements.txt .
