@@ -9,13 +9,12 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 
 def _init_driver():
-    logging.debug(f"Chrome binary found: {shutil.which(os.getenv('CHROME_BIN', '/usr/bin/google-chrome'))}")
-    logging.debug(f"ChromeDriver found: {shutil.which('/usr/local/bin/chromedriver')}")
-    ...
+    logging.debug(f"Chrome binary found: {shutil.which('google-chrome')}")
+    logging.debug(f"ChromeDriver found: {shutil.which('chromedriver')}")
+
     chrome_options = Options()
 
     # Explicitly set Chrome binary location
@@ -45,7 +44,11 @@ def _init_driver():
     chromedriver_path = shutil.which("chromedriver") or "/usr/local/bin/chromedriver"
     service = Service(chromedriver_path)
     driver = webdriver.Chrome(service=service, options=chrome_options)
+
+    # Attach temp dir to driver for cleanup
+    driver._user_data_dir = unique_tmp_dir
     return driver
+
 
 def get_weekly_ad(store_id, user=None):
     """
@@ -59,7 +62,6 @@ def get_weekly_ad(store_id, user=None):
 
     try:
         driver.get(weekly_ad_url)
-        # Wait for the page to load (adjust selector to actual sale item container)
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, ".weekly-ad-item"))
         )
@@ -79,7 +81,7 @@ def get_weekly_ad(store_id, user=None):
         logging.error(f"Error fetching weekly ad: {e}", exc_info=True)
     finally:
         driver.quit()
-        shutil.rmtree(unique_tmp_dir, ignore_errors=True)
-
+        if hasattr(driver, "_user_data_dir"):
+            shutil.rmtree(driver._user_data_dir, ignore_errors=True)
 
     return sale_items
