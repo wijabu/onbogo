@@ -8,11 +8,15 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 def _init_driver():
     chrome_options = Options()
 
+    # Explicitly set Chrome binary location
     chrome_options.binary_location = os.getenv("CHROME_BIN", "/usr/bin/google-chrome")
+
+    # Add Chrome flags for headless operation
     chrome_options.add_argument("--headless=new")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
@@ -24,10 +28,16 @@ def _init_driver():
     chrome_options.add_argument("--disable-background-networking")
     chrome_options.add_argument("--no-first-run")
 
+    # Create unique user data directory
     unique_tmp_dir = f"/tmp/chrome-user-data-{uuid.uuid4()}"
     os.makedirs(unique_tmp_dir, exist_ok=True)
     chrome_options.add_argument(f"--user-data-dir={unique_tmp_dir}")
 
+    # Set desired capabilities
+    caps = DesiredCapabilities.CHROME.copy()
+    chrome_options.set_capability("browserName", "chrome")
+
+    # Initialize ChromeDriver with explicit path
     service = Service("/usr/local/bin/chromedriver")
     driver = webdriver.Chrome(service=service, options=chrome_options)
     return driver
