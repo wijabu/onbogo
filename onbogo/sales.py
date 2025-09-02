@@ -1,5 +1,4 @@
 import logging
-import tempfile
 import os
 import uuid
 
@@ -8,6 +7,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 
 def _init_driver():
     chrome_options = Options()
@@ -28,11 +28,9 @@ def _init_driver():
     os.makedirs(unique_tmp_dir, exist_ok=True)
     chrome_options.add_argument(f"--user-data-dir={unique_tmp_dir}")
 
-    # Explicitly use the manually installed Chromedriver
-    driver = webdriver.Chrome(
-        executable_path="/usr/local/bin/chromedriver",
-        options=chrome_options
-    )
+    # Use Service object to specify Chromedriver path
+    service = Service(executable_path="/usr/local/bin/chromedriver")
+    driver = webdriver.Chrome(service=service, options=chrome_options)
     return driver
 
 def get_weekly_ad(store_id, user=None):
