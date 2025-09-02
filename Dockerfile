@@ -46,6 +46,9 @@ ENV PATH="/usr/local/bin:$PATH"
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# TEMP
+RUN google-chrome --version && chromedriver --version
+
 # Copy your app code
 COPY . /app
 WORKDIR /app
