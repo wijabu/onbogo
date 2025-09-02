@@ -33,6 +33,9 @@ def _init_driver():
     os.makedirs(unique_tmp_dir, exist_ok=True)
     chrome_options.add_argument(f"--user-data-dir={unique_tmp_dir}")
 
+    # Explicitly set browserName to "chrome"
+    chrome_options.set_capability("browserName", "chrome")
+
     chromedriver_path = shutil.which("chromedriver") or "/usr/bin/chromedriver"
     service = Service(chromedriver_path)
     driver = webdriver.Chrome(service=service, options=chrome_options)
