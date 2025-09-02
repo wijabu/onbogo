@@ -11,7 +11,6 @@ from selenium.webdriver.chrome.service import Service
 
 def _init_driver():
     chrome_options = Options()
-    chrome_options.binary_location = "/usr/bin/google-chrome"
 
     chrome_options.add_argument("--headless=new")
     chrome_options.add_argument("--no-sandbox")
@@ -28,8 +27,7 @@ def _init_driver():
     os.makedirs(unique_tmp_dir, exist_ok=True)
     chrome_options.add_argument(f"--user-data-dir={unique_tmp_dir}")
 
-    # Use Service object to specify Chromedriver path
-    service = Service(executable_path="/usr/local/bin/chromedriver")
+    service = Service("/usr/local/bin/chromedriver")
     driver = webdriver.Chrome(service=service, options=chrome_options)
     return driver
 
