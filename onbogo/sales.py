@@ -39,11 +39,11 @@ def _init_driver():
     chrome_options.add_argument(f"--user-data-dir={unique_tmp_dir}")
 
     # Set desired capabilities
-    caps = DesiredCapabilities.CHROME.copy()
     chrome_options.set_capability("browserName", "chrome")
 
     # Initialize ChromeDriver with explicit path
-    service = Service("/usr/local/bin/chromedriver")
+    chromedriver_path = shutil.which("chromedriver") or "/usr/local/bin/chromedriver"
+    service = Service(chromedriver_path)
     driver = webdriver.Chrome(service=service, options=chrome_options)
     return driver
 
@@ -79,5 +79,7 @@ def get_weekly_ad(store_id, user=None):
         logging.error(f"Error fetching weekly ad: {e}", exc_info=True)
     finally:
         driver.quit()
+        shutil.rmtree(unique_tmp_dir, ignore_errors=True)
+
 
     return sale_items
