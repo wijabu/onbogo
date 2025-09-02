@@ -24,12 +24,15 @@ def _init_driver():
     chrome_options.add_argument("--disable-background-networking")
     chrome_options.add_argument("--no-first-run")
 
-    # Create a truly unique user-data-dir inside /tmp
     unique_tmp_dir = f"/tmp/chrome-user-data-{uuid.uuid4()}"
     os.makedirs(unique_tmp_dir, exist_ok=True)
     chrome_options.add_argument(f"--user-data-dir={unique_tmp_dir}")
 
-    driver = webdriver.Chrome(options=chrome_options)
+    # Explicitly use the manually installed Chromedriver
+    driver = webdriver.Chrome(
+        executable_path="/usr/local/bin/chromedriver",
+        options=chrome_options
+    )
     return driver
 
 def get_weekly_ad(store_id, user=None):
