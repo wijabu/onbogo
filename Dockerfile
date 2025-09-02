@@ -1,4 +1,6 @@
 
+# CACHE-BUSTING COMMENT: Force rebuild on Render
+
 # Use a lightweight Python base image
 FROM python:3.10-slim
 
@@ -15,14 +17,8 @@ RUN ln -sf $(which chromedriver) /usr/bin/chromedriver
 ENV CHROME_BIN=/usr/bin/google-chrome
 ENV PATH="/usr/bin:/usr/local/bin:$PATH"
 
-# Diagnostic step to verify installation
-RUN echo "PATH=$PATH" && \
-    ls -l /usr/bin/google-chrome && \
-    ls -l /usr/bin/chromedriver && \
-    which google-chrome && \
-    which chromedriver && \
-    google-chrome --version && \
-    chromedriver --version
+# Diagnostic check - DO NOT REMOVE
+RUN echo "=== CHROME DIAGNOSTICS START ===" &&     echo "PATH=$PATH" &&     ls -l /usr/bin/google-chrome || echo "google-chrome not found" &&     ls -l /usr/bin/chromedriver || echo "chromedriver not found" &&     which google-chrome || echo "google-chrome not in PATH" &&     which chromedriver || echo "chromedriver not in PATH" &&     google-chrome --version || echo "google-chrome --version failed" &&     chromedriver --version || echo "chromedriver --version failed" &&     echo "=== CHROME DIAGNOSTICS END ==="
 
 # Install Python dependencies
 COPY requirements.txt .
