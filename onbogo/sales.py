@@ -1,6 +1,7 @@
 import logging
 import os
 import uuid
+import shutil
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -10,7 +11,11 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
+
 def _init_driver():
+    logging.debug(f"Chrome binary found: {shutil.which(os.getenv('CHROME_BIN', '/usr/bin/google-chrome'))}")
+    logging.debug(f"ChromeDriver found: {shutil.which('/usr/local/bin/chromedriver')}")
+    ...
     chrome_options = Options()
 
     # Explicitly set Chrome binary location
