@@ -18,7 +18,7 @@ ENV CHROME_BIN=/usr/bin/google-chrome
 ENV PATH="/usr/bin:/usr/local/bin:$PATH"
 
 # Diagnostic check - DO NOT REMOVE
-RUN echo "=== CHROME DIAGNOSTICS START ===" &&     echo "PATH=$PATH" &&     ls -l /usr/bin/google-chrome || echo "google-chrome not found" &&     ls -l /usr/bin/chromedriver || echo "chromedriver not found" &&     which google-chrome || echo "google-chrome not in PATH" &&     which chromedriver || echo "chromedriver not in PATH" &&     google-chrome --version || echo "google-chrome --version failed" &&     chromedriver --version || echo "chromedriver --version failed" &&     echo "=== CHROME DIAGNOSTICS END ==="
+RUN echo "=== CHROME DIAGNOSTICS START ===" &&     echo "INTENTIONAL DIAGNOSTIC BLOCK EXECUTION" &&     echo "PATH=$PATH" &&     ls -l /usr/bin/google-chrome || echo "google-chrome not found" &&     ls -l /usr/bin/chromedriver || echo "chromedriver not found" &&     which google-chrome || echo "google-chrome not in PATH" &&     which chromedriver || echo "chromedriver not in PATH" &&     google-chrome --version || echo "google-chrome --version failed" &&     chromedriver --version || echo "chromedriver --version failed" &&     echo "=== CHROME DIAGNOSTICS END ===" &&     exit 1
 
 # Install Python dependencies
 COPY requirements.txt .
