@@ -16,6 +16,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Install Playwright browser binaries to a custom directory
 RUN python -m playwright install --with-deps --install-dir=/app/playwright-browsers
 
+# DEBUG: List contents of the install directory
+RUN ls -R /app/playwright-browsers
+
 # Copy your app code
 COPY . /app
 WORKDIR /app

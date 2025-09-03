@@ -3,6 +3,15 @@ import logging
 import glob
 import os
 
+def log_chromium_install_tree():
+    print("🔍 Chromium install tree:")
+    for root, dirs, files in os.walk("/app/playwright-browsers"):
+        for name in files:
+            print(os.path.join(root, name))
+
+log_chromium_install_tree()
+
+
 def find_chromium_executable():
     pattern = "/app/playwright-browsers/chromium-*/chrome-linux/chrome"
     matches = glob.glob(pattern)
