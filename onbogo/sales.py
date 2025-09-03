@@ -1,5 +1,15 @@
 from playwright.sync_api import sync_playwright
 import logging
+import glob
+import os
+
+def find_chromium_executable():
+    pattern = "/app/playwright-browsers/chromium-*/chrome-linux/chrome"
+    matches = glob.glob(pattern)
+    if matches:
+        return matches[0]
+    else:
+        raise FileNotFoundError("Chromium executable not found in custom install path.")
 
 def get_weekly_ad(store_id, user=None):
     url = f"https://www.publix.com/savings/weekly-ad/view-all?storeid={store_id}"
@@ -8,10 +18,14 @@ def get_weekly_ad(store_id, user=None):
     sale_items = []
 
     with sync_playwright() as p:
+        executable_path = find_chromium_executable()
+
         browser = p.chromium.launch(
             headless=True,
-            executable_path="/app/playwright-browsers/chromium-1067/chrome-linux/chrome"
+            executable_path=executable_path
         )
+
+
         page = browser.new_page()
         page.goto(url)
 
