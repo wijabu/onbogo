@@ -13,10 +13,13 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Install Playwright browser binaries to a custom directory
+RUN python -m playwright install --with-deps --install-dir=/app/playwright-browsers
+
 # Copy your app code
 COPY . /app
 WORKDIR /app
 
 # Expose port and run the app
 EXPOSE 5000
-CMD ["python", "app.py"]
+CMD ["python", "main.py"]

@@ -8,7 +8,10 @@ def get_weekly_ad(store_id, user=None):
     sale_items = []
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
+        browser = p.chromium.launch(
+            headless=True,
+            executable_path="/app/playwright-browsers/chromium-1067/chrome-linux/chrome"
+        )
         page = browser.new_page()
         page.goto(url)
 
