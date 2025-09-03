@@ -13,8 +13,8 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install Playwright and its browser dependencies
-RUN pip install playwright && playwright install --with-deps
+# Install Playwright browser binaries
+RUN playwright install --with-deps
 
 # Copy your app code
 COPY . /app
