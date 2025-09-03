@@ -4,7 +4,7 @@ import logging
 
 # Force Playwright to install browser binaries at runtime
 try:
-    subprocess.run(["playwright", "install", "--with-deps"], check=True)
+    subprocess.run(["python", "-m", "playwright", "install", "--with-deps"], check=True)
     logging.info("Playwright browsers installed successfully.")
 except Exception as e:
     logging.error(f"Failed to install Playwright browsers: {e}")
