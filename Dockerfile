@@ -8,6 +8,9 @@ RUN apt-get update && apt-get install -y     wget curl gnupg unzip     libglib2.
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Install Playwright Python bindings
+RUN python -m playwright install
+
 # Copy app code
 COPY . /app
 WORKDIR /app
