@@ -29,6 +29,9 @@ def get_weekly_ad(store_id, user=None):
             page.wait_for_selector(".weekly-ad-item", timeout=10000)
         except Exception as e:
             logging.error(f"Timeout waiting for weekly ad items: {e}")
+            html = page.content()
+            with open("page_debug.html", "w", encoding="utf-8") as f:
+                f.write(html)
             browser.close()
             return []
 
