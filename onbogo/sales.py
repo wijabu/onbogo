@@ -30,8 +30,7 @@ def get_weekly_ad(store_id, user=None):
         except Exception as e:
             logging.error(f"Timeout waiting for weekly ad items: {e}")
             html = page.content()
-            with open("page_debug.html", "w", encoding="utf-8") as f:
-                f.write(html)
+            logging.debug("🔍 Page HTML snapshot:\n" + html[:5000])  # Log first 5000 characters
             browser.close()
             return []
 
