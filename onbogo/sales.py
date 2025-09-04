@@ -26,17 +26,21 @@ def get_weekly_ad(store_id, user=None):
         page.goto(url, wait_until="domcontentloaded")
 
         try:
-            page.wait_for_selector(".weekly-ad-item", timeout=10000)
+            page.wait_for_selector("#weekly-ad-container", timeout=15000)
         except Exception as e:
-            logging.error(f"Timeout waiting for weekly ad items: {e}")
+            logging.error(f"Timeout waiting for weekly ad container: {e}")
             html = page.content()
-            logging.debug("🔍 Page HTML snapshot:\n" + html[:5000])  # Log first 5000 characters
+            logging.debug("🔍 Page HTML snapshot:\n" + html[:5000])
             browser.close()
             return []
 
-        items = page.query_selector_all(".weekly-ad-item")
-        sale_items = []
+        time.sleep(5)  # Fallback delay for dynamic content
 
+        items = page.query_selector_all(".weekly-ad-item")
+        if not items:
+            logging.warning("No .weekly-ad-item elements found after delay.")
+
+        sale_items = []
         for item in items:
             try:
                 title = item.query_selector(".item-title").inner_text()
