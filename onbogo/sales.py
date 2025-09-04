@@ -16,29 +16,35 @@ def get_weekly_ad(store_id, user=None):
         context = browser.new_context(
             java_script_enabled=True,
             viewport={"width": 1280, "height": 800},
-            user_agent="Mozilla/5.0",
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36",
             locale="en-US",
-            permissions=[],
+            geolocation={"longitude": -81.4, "latitude": 28.7},  # Approx. Wekiwa Springs, FL
+            permissions=["geolocation"],
             bypass_csp=True,
         )
         page = context.new_page()
-        page.set_default_timeout(15000)
+        page.set_default_timeout(20000)
         page.goto(url, wait_until="domcontentloaded")
 
         try:
-            page.wait_for_selector("#weekly-ad-container", timeout=15000)
+            page.wait_for_selector("body", timeout=15000)
         except Exception as e:
-            logging.error(f"Timeout waiting for weekly ad container: {e}")
+            logging.error(f"Timeout waiting for body: {e}")
             html = page.content()
             logging.debug("🔍 Page HTML snapshot:\n" + html[:5000])
             browser.close()
             return []
 
-        time.sleep(5)  # Fallback delay for dynamic content
+        # Scroll to bottom to trigger lazy loading
+        page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+        time.sleep(8)
+
+        html = page.content()
+        logging.debug("🔍 Page HTML after scroll:\n" + html[:5000])
 
         items = page.query_selector_all(".weekly-ad-item")
         if not items:
-            logging.warning("No .weekly-ad-item elements found after delay.")
+            logging.warning("No .weekly-ad-item elements found after scroll.")
 
         sale_items = []
         for item in items:
