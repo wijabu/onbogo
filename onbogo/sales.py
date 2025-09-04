@@ -1,3 +1,9 @@
+import logging
+import time
+from playwright.sync_api import sync_playwright
+from decouple import config
+
+
 def get_weekly_ad(store_id, user=None):
     url = f"https://www.publix.com/savings/weekly-ad/view-all?storeid={store_id}"
     logging.debug(f"Opening weekly ad URL: {url}")
