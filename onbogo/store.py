@@ -1,55 +1,66 @@
 #!/usr/bin/env python3
 
-from flask import jsonify, render_template
-
-import bs4
-import requests
 import logging
-# import json
-from unidecode import unidecode
+import time
+from playwright.sync_api import sync_playwright
 
 logging.basicConfig(
-    # filename='myLogFile.txt', # use this to write logs to specified file
     level=logging.DEBUG,
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
 
-# logging.disable(logging.CRITICAL) # this code disables logging for the program
 
-def locate(zip, stores=[]):
-    stores.clear()
-    
-    store_url = f"https://accessibleweeklyad.publix.com/PublixAccessibility?CityStateZip={zip}"
+def locate(zip):
+    url = f"https://accessibleweeklyad.publix.com/PublixAccessibility?CityStateZip={zip}"
+    logging.debug(f"Locating stores for zip: {zip}")
 
-    res = requests.get(store_url)
-    res.raise_for_status  # raise an exception if there is a problem downloading URL text
+    stores = []
 
-    soup = bs4.BeautifulSoup(res.text, features="html.parser")
-    titles = soup.select("p.addressHeadline")
-    addresses = soup.select("p.addressStoreTitle")
-    ids = soup.select("a.mapddlink.action-tracking-directions.excludeFromMobile")
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        context = browser.new_context(
+            java_script_enabled=True,
+            viewport={"width": 1280, "height": 800},
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36",
+            locale="en-US",
+        )
+        page = context.new_page()
+        page.set_default_timeout(20000)
+        page.goto(url, wait_until="domcontentloaded")
 
-    logging.debug("Start store location search")
+        try:
+            page.wait_for_selector("p.addressHeadline", timeout=15000)
+        except Exception as e:
+            logging.error(f"Timeout waiting for store listings: {e}")
+            browser.close()
+            return []
 
-    for i in range(len(titles)):
-        title = titles[i].text.strip()
-        address = addresses[i].text.strip()
-        store_id = ids[i]["data-tracking-storeid"]
-        
-        logging.debug(
-            f"store {i} is {title}"
-        )  # will log all items found on weekly ad
-        
-        stores.append({"title":title, "address":address, "store_id":int(store_id)})
-        print(stores)
-    
-    if stores == []:
-        print("No stores found by zip code")
-    else:
-        logging.debug(f"Stores found near my zip code: {stores}")
-    
+        titles = page.query_selector_all("p.addressHeadline")
+        addresses = page.query_selector_all("p.addressStoreTitle")
+        ids = page.query_selector_all("a.mapddlink")
+
+        for i in range(len(titles)):
+            try:
+                title = titles[i].inner_text().strip()
+                address = addresses[i].inner_text().strip()
+                store_id = ids[i].get_attribute("data-tracking-storeid")
+                stores.append({
+                    "title": title,
+                    "address": address,
+                    "store_id": int(store_id)
+                })
+                logging.debug(f"Found store: {title} (ID: {store_id})")
+            except Exception as e:
+                logging.warning(f"Error parsing store {i}: {e}")
+                continue
+
+        browser.close()
+
+    if not stores:
+        logging.warning(f"No stores found for zip: {zip}")
+
     return stores
 
 
 if __name__ == "__main__":
-    locate()
+    locate("32779")

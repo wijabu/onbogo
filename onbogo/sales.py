@@ -1,7 +1,6 @@
 import logging
 import time
 from playwright.sync_api import sync_playwright
-from decouple import config
 
 
 def get_weekly_ad(store_id, user=None):
@@ -11,9 +10,7 @@ def get_weekly_ad(store_id, user=None):
     start_time = time.time()
 
     with sync_playwright() as p:
-        browser = p.chromium.connect_over_cdp(
-            f"wss://production-sfo.browserless.io?token={config('BROWSERLESS_API_KEY')}"
-        )
+        browser = p.chromium.launch(headless=True)
         context = browser.new_context(
             java_script_enabled=True,
             viewport={"width": 1280, "height": 800},
@@ -24,25 +21,26 @@ def get_weekly_ad(store_id, user=None):
             bypass_csp=True,
         )
         page = context.new_page()
-        page.set_default_timeout(20000)
+        page.set_default_timeout(30000)
         page.goto(url, wait_until="domcontentloaded")
 
+        # Wait for Vue to render product cards, not just the HTML shell
         try:
-            page.wait_for_selector("body", timeout=15000)
+            page.wait_for_selector("li.p-grid-item", timeout=30000)
         except Exception as e:
-            logging.error(f"Timeout waiting for body: {e}")
+            logging.error(f"Timeout waiting for product cards: {e}")
             html = page.content()
-            logging.debug("🔍 Page HTML snapshot:\n" + html[:5000])
+            logging.debug("Page HTML snapshot:\n" + html[:5000])
             browser.close()
             return []
 
-        # Scroll multiple times to trigger lazy loading
+        # Scroll to trigger lazy loading of remaining cards
         for _ in range(5):
             page.evaluate("window.scrollBy(0, document.body.scrollHeight)")
-            time.sleep(2)
+            time.sleep(1.5)
 
-        html = page.content()
-        logging.debug("🔍 Page HTML after scroll:\n" + html[:5000])
+        # Wait for any newly-loaded cards to settle
+        page.wait_for_load_state("networkidle")
 
         items = page.query_selector_all("li.p-grid-item")
 
@@ -52,14 +50,16 @@ def get_weekly_ad(store_id, user=None):
         sale_items = []
         for item in items:
             try:
-                title = item.query_selector("[data-qa-automation='prod-title']").inner_text()
+                title = item.query_selector("[data-qa-automation='prod-title']").inner_text().strip()
                 badge = item.query_selector(".p-savings-badge__text")
                 price_info = item.query_selector(".additional-info")
+                valid_dates = item.query_selector(".valid-dates")
 
                 sale_items.append({
                     "title": title,
-                    "deal": badge.inner_text() if badge else "",
-                    "price_info": price_info.inner_text() if price_info else ""
+                    "deal": badge.inner_text().strip() if badge else "",
+                    "price_info": price_info.inner_text().strip() if price_info else "",
+                    "valid_dates": valid_dates.inner_text().strip() if valid_dates else "",
                 })
             except Exception:
                 continue

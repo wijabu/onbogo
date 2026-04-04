@@ -1,0 +1,14 @@
+[Unit]
+Description=Onbogo Flask App
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/onbogo
+EnvironmentFile=/home/ubuntu/onbogo/.env
+ExecStart=/home/ubuntu/onbogo/venv/bin/gunicorn --bind 0.0.0.0:8080 --workers 1 --timeout 120 main:app
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

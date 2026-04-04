@@ -35,6 +35,7 @@ def create_app():
     from .auth import auth
     from .views import views
     from .errors import errors
+    from . import onbogo
 
     app.register_blueprint(auth)
     app.register_blueprint(views)
