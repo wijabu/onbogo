@@ -1,70 +1,95 @@
-# Onbogo — Oracle Cloud Deployment Guide
+# Onbogo — Google Cloud Deployment Guide
 
 ## Overview
 
-This guide walks through deploying Onbogo on Oracle Cloud's **Always Free** tier using an Ampere A1 (ARM) VM. The app runs 24/7 with no sleep, and Playwright runs Chromium locally — no Browserless.io account needed.
+This guide walks through deploying Onbogo on Google Cloud's **Always Free** e2-micro VM. The instance runs 24/7 with no sleep, and Playwright runs Chromium locally — no Browserless.io account needed.
 
 ---
 
 ## Prerequisites
 
-- Oracle Cloud account ([cloud.oracle.com](https://cloud.oracle.com)) — credit card required for signup, but Always Free resources are never charged
+- Google account
 - Your app's environment variable values (MongoDB URI, Gmail credentials, etc.)
-- Git access to your repo
+
+> **Credit card note:** Google Cloud requires a credit card to sign up, but the e2-micro VM is part of the Always Free tier and is never charged as long as you stay within the free limits.
 
 ---
 
-## Step 1 — Create the VM
+## Step 1 — Create a Google Cloud Account
 
-1. Log in to [cloud.oracle.com](https://cloud.oracle.com)
-2. Go to **Compute → Instances → Create Instance**
-3. Give it a name (e.g. `onbogo`)
-4. Under **Image and Shape**, click **Change Shape**
-   - Select **Ampere** (ARM-based)
-   - Choose **VM.Standard.A1.Flex**
-   - Set **1 OCPU** and **6 GB RAM**
-5. Under **Networking**, leave defaults (a public IP will be assigned)
-6. Under **Add SSH Keys**, download or paste your public key
-7. Click **Create**
-
-Wait ~2 minutes for the instance to show **Running**.
+1. Go to [cloud.google.com](https://cloud.google.com) and click **Get started for free**
+2. Sign in with your Google account
+3. Complete the billing setup (required, but you won't be charged for Always Free resources)
+4. You'll land in the Google Cloud Console
 
 ---
 
-## Step 2 — Open Port 8080
+## Step 2 — Create the VM
 
-Oracle blocks all ports by default at two levels — the cloud firewall and the VM's OS firewall. You need to open both.
+1. In the top search bar, search for **Compute Engine** and click it
+2. If prompted, click **Enable** to enable the Compute Engine API (takes ~1 minute)
+3. Click **Create Instance**
+4. Configure the instance:
+   - **Name:** `onbogo`
+   - **Region:** `us-east1`, `us-west1`, or `us-central1` — pick the closest to you. **Must be one of these three** for Always Free eligibility
+   - **Zone:** leave as default
+5. Under **Machine configuration**:
+   - Series: **E2**
+   - Machine type: **e2-micro** (2 vCPU, 1 GB memory)
+6. Under **Boot disk**, click **Change**:
+   - Operating system: **Ubuntu**
+   - Version: **Ubuntu 22.04 LTS**
+   - Boot disk size: **30 GB** (free tier includes 30 GB)
+   - Click **Select**
+7. Under **Firewall**, check both:
+   - **Allow HTTP traffic**
+   - **Allow HTTPS traffic**
+8. Click **Create**
 
-### Cloud firewall (Security List)
-1. In your instance details, click the **Subnet** link
-2. Click **Default Security List**
-3. Click **Add Ingress Rules**
-4. Fill in:
-   - Source CIDR: `0.0.0.0/0`
-   - IP Protocol: TCP
-   - Destination Port Range: `8080`
-5. Click **Add Ingress Rules**
+Wait ~1 minute for the instance to show a green checkmark.
 
-### VM OS firewall
-SSH in first (see Step 3), then run:
+---
+
+## Step 3 — Open Port 8080
+
+Google Cloud blocks custom ports by default. Add a firewall rule to allow port 8080.
+
+1. In the left sidebar go to **VPC Network → Firewall**
+2. Click **Create Firewall Rule**
+3. Fill in:
+   - **Name:** `allow-8080`
+   - **Targets:** All instances in the network
+   - **Source IPv4 ranges:** `0.0.0.0/0`
+   - **Protocols and ports:** Select **TCP** and enter `8080`
+4. Click **Create**
+
+---
+
+## Step 4 — SSH Into the VM
+
+Google Cloud has a built-in browser SSH — no key file needed.
+
+1. Go back to **Compute Engine → VM Instances**
+2. Find your `onbogo` instance and click **SSH** on the right side
+3. A terminal window will open in your browser
+
+---
+
+## Step 5 — Add a Swap File
+
+The e2-micro only has 1 GB RAM. Adding swap prevents the app from crashing if memory gets tight (e.g. during Playwright scraping).
+
 ```bash
-sudo iptables -I INPUT -p tcp --dport 8080 -j ACCEPT
-sudo iptables-save | sudo tee /etc/iptables/rules.v4
+sudo fallocate -l 1G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 ```
 
 ---
 
-## Step 3 — SSH Into the VM
-
-```bash
-ssh -i /path/to/your-private-key.pem ubuntu@<your-vm-ip>
-```
-
-Your VM's public IP is shown on the instance details page in the Oracle console.
-
----
-
-## Step 4 — Install System Dependencies
+## Step 6 — Install System Dependencies
 
 ```bash
 sudo apt update && sudo apt upgrade -y
@@ -82,7 +107,7 @@ sudo apt install -y \
 
 ---
 
-## Step 5 — Clone the Repo and Set Up Python
+## Step 7 — Clone the Repo and Set Up Python
 
 ```bash
 cd ~
@@ -102,7 +127,7 @@ python -m playwright install chromium
 
 ---
 
-## Step 6 — Create the .env File
+## Step 8 — Create the .env File
 
 ```bash
 nano ~/onbogo/.env
@@ -127,7 +152,7 @@ Save with `Ctrl+O`, then `Ctrl+X` to exit.
 
 ---
 
-## Step 7 — Set Up the Systemd Service
+## Step 9 — Set Up the Systemd Service
 
 This makes the app start automatically on boot and restart if it crashes.
 
@@ -147,11 +172,12 @@ You should see `Active: active (running)`.
 
 ---
 
-## Step 8 — Verify the App
+## Step 10 — Verify the App
 
-Open a browser and go to:
+Find your VM's external IP on the **VM Instances** page in the Google Cloud Console, then open:
+
 ```
-http://<your-vm-ip>:8080
+http://<your-vm-external-ip>:8080
 ```
 
 You should see the Onbogo homepage.
