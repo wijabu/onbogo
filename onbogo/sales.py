@@ -31,7 +31,7 @@ def get_weekly_ad(store_id, user=None):
 
         try:
             with page.expect_response(
-                lambda r: "storeproductssavings" in r.url, timeout=30000
+                lambda r: "storeproductssavings" in r.url, timeout=60000
             ) as response_info:
                 page.goto(url, wait_until="domcontentloaded")
 
