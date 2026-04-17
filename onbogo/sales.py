@@ -10,7 +10,12 @@ def get_weekly_ad(store_id, user=None):
     start_time = time.time()
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
+        browser = p.chromium.launch(headless=True, args=[
+            "--no-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-gpu",
+            "--single-process",
+        ])
         context = browser.new_context(
             java_script_enabled=True,
             viewport={"width": 1280, "height": 800},
@@ -35,7 +40,7 @@ def get_weekly_ad(store_id, user=None):
             return []
 
         # Scroll to trigger lazy loading of remaining cards
-        for _ in range(5):
+        for _ in range(3):
             page.evaluate("window.scrollBy(0, document.body.scrollHeight)")
             time.sleep(1.5)
 
