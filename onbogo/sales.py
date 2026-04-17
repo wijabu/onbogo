@@ -13,8 +13,6 @@ def get_weekly_ad(store_id, user=None):
             "--disable-dev-shm-usage",
             "--disable-gpu",
             "--disable-blink-features=AutomationControlled",
-            "--disable-infobars",
-            "--window-size=1280,800",
         ])
         context = browser.new_context(
             java_script_enabled=True,
@@ -24,32 +22,26 @@ def get_weekly_ad(store_id, user=None):
             geolocation={"longitude": -81.4, "latitude": 28.7},
             permissions=["geolocation"],
             bypass_csp=True,
-            extra_http_headers={
-                "Accept-Language": "en-US,en;q=0.9",
-                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-            },
         )
-        context.add_init_script("""
-            Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
-            Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3] });
-            Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
-        """)
+        context.add_init_script(
+            "Object.defineProperty(navigator, 'webdriver', { get: () => undefined });"
+        )
         page = context.new_page()
         page.set_default_timeout(60000)
 
-        def on_response(response):
-            try:
-                if "storeproductssavings" in response.url and response.status == 200:
-                    logging.debug(f"SAVINGS URL: {response.url}")
-                    logging.debug(f"SAVINGS HEADERS: {dict(response.request.headers)}")
-                    body = response.body()
-                    logging.debug(f"SAVINGS BODY: {body[:3000].decode('utf-8', errors='replace')}")
-            except Exception as e:
-                logging.debug(f"Response capture error: {e}")
+        try:
+            with page.expect_response(
+                lambda r: "storeproductssavings" in r.url, timeout=30000
+            ) as response_info:
+                page.goto(url, wait_until="domcontentloaded")
 
-        page.on("response", on_response)
-        page.goto(url, wait_until="domcontentloaded")
-        time.sleep(15)
+            response = response_info.value
+            logging.debug(f"SAVINGS URL: {response.url}")
+            logging.debug(f"SAVINGS POST DATA: {response.request.post_data}")
+            body = response.body()
+            logging.debug(f"SAVINGS BODY: {body[:3000].decode('utf-8', errors='replace')}")
+        except Exception as e:
+            logging.error(f"Failed to capture savings response: {e}")
 
         browser.close()
         return []
