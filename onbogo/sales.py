@@ -39,6 +39,20 @@ def get_weekly_ad(store_id, user=None):
         """)
         page = context.new_page()
         page.set_default_timeout(60000)
+
+        # Block heavy third-party scripts that eat RAM before Vue can render
+        def block_trackers(route):
+            blocked = (
+                "googletagmanager", "dynatrace", "optimizely", "youtube",
+                "doubleclick", "demdex", "foresee", "mapbox", "pinterest",
+                "google-analytics", "googlesyndication", "ruxitagent",
+            )
+            if any(b in route.request.url for b in blocked):
+                route.abort()
+            else:
+                route.continue_()
+
+        page.route("**/*", block_trackers)
         page.goto(url, wait_until="domcontentloaded")
 
         # Give the Vue app time to boot after domcontentloaded
