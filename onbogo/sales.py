@@ -26,7 +26,7 @@ def get_weekly_ad(store_id, user=None):
 
         # Wait for Vue to render product cards, not just the HTML shell
         try:
-            page.wait_for_selector("li.p-grid-item", timeout=30000)
+            page.wait_for_selector("li.p-grid-item", timeout=30000, state="attached")
         except Exception as e:
             logging.error(f"Timeout waiting for product cards: {e}")
             html = page.content()
