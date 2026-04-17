@@ -14,7 +14,6 @@ def get_weekly_ad(store_id, user=None):
             "--no-sandbox",
             "--disable-dev-shm-usage",
             "--disable-gpu",
-            "--single-process",
         ])
         context = browser.new_context(
             java_script_enabled=True,
