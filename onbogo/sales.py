@@ -39,8 +39,8 @@ def get_weekly_ad(store_id, user=None):
             page.evaluate("window.scrollBy(0, document.body.scrollHeight)")
             time.sleep(1.5)
 
-        # Wait for any newly-loaded cards to settle
-        page.wait_for_load_state("networkidle")
+        # Brief pause for any newly-loaded cards to settle
+        time.sleep(2)
 
         items = page.query_selector_all("li.p-grid-item")
 
