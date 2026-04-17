@@ -40,66 +40,29 @@ def get_weekly_ad(store_id, user=None):
         page = context.new_page()
         page.set_default_timeout(60000)
 
-        # Block heavy third-party scripts that eat RAM before Vue can render
-        def block_trackers(route):
-            blocked = (
-                "googletagmanager", "dynatrace", "optimizely", "youtube",
-                "doubleclick", "demdex", "foresee", "mapbox", "pinterest",
-                "google-analytics", "googlesyndication", "ruxitagent",
-            )
-            if any(b in route.request.url for b in blocked):
-                route.abort()
-            else:
-                route.continue_()
+        # Capture JSON responses to find the weekly ad API endpoint
+        captured = []
 
-        page.route("**/*", block_trackers)
-        page.goto(url, wait_until="domcontentloaded")
-
-        # Give the Vue app time to boot after domcontentloaded
-        time.sleep(3)
-
-        # Wait for Vue to render product titles, not just the empty grid containers
-        try:
-            page.wait_for_selector("[data-qa-automation='prod-title']", timeout=60000, state="attached")
-        except Exception as e:
-            logging.error(f"Timeout waiting for product cards: {e}")
-            html = page.content()
-            logging.debug("Page HTML snapshot:\n" + html[:5000])
-            browser.close()
-            return []
-
-        # Scroll to trigger lazy loading of remaining cards
-        for _ in range(3):
-            page.evaluate("window.scrollBy(0, document.body.scrollHeight)")
-            time.sleep(1.5)
-
-        # Brief pause for any newly-loaded cards to settle
-        time.sleep(2)
-
-        items = page.query_selector_all("li.p-grid-item")
-        logging.debug(f"Found {len(items)} li.p-grid-item elements in DOM.")
-
-        if not items:
-            logging.warning("No product cards found in .p-grid-item elements.")
-
-        sale_items = []
-        for item in items:
+        def on_response(response):
             try:
-                title = item.query_selector("[data-qa-automation='prod-title']").inner_text().strip()
-                badge = item.query_selector(".p-savings-badge__text")
-                price_info = item.query_selector(".additional-info")
-                valid_dates = item.query_selector(".valid-dates")
-
-                sale_items.append({
-                    "title": title,
-                    "deal": badge.inner_text().strip() if badge else "",
-                    "price_info": price_info.inner_text().strip() if price_info else "",
-                    "valid_dates": valid_dates.inner_text().strip() if valid_dates else "",
-                })
+                if "publix.com" in response.url and response.status == 200:
+                    ct = response.headers.get("content-type", "")
+                    if "json" in ct:
+                        logging.debug(f"JSON response: {response.url}")
+                        captured.append((response.url, response.body()))
             except Exception:
-                continue
+                pass
+
+        page.on("response", on_response)
+        page.goto(url, wait_until="domcontentloaded")
+        time.sleep(10)
+
+        logging.debug(f"Captured {len(captured)} JSON responses:")
+        for cap_url, _ in captured:
+            logging.debug(f"  {cap_url}")
 
         browser.close()
+        return []
 
     elapsed = time.time() - start_time
     logging.debug(f"Scraping completed in {elapsed:.2f} seconds. Found {len(sale_items)} items.")
