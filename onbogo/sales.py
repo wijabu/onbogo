@@ -28,9 +28,9 @@ def get_weekly_ad(store_id, user=None):
         page.set_default_timeout(30000)
         page.goto(url, wait_until="domcontentloaded")
 
-        # Wait for Vue to render product cards, not just the HTML shell
+        # Wait for Vue to render product titles, not just the empty grid containers
         try:
-            page.wait_for_selector("li.p-grid-item", timeout=30000, state="attached")
+            page.wait_for_selector("[data-qa-automation='prod-title']", timeout=30000, state="attached")
         except Exception as e:
             logging.error(f"Timeout waiting for product cards: {e}")
             html = page.content()
@@ -47,6 +47,7 @@ def get_weekly_ad(store_id, user=None):
         time.sleep(2)
 
         items = page.query_selector_all("li.p-grid-item")
+        logging.debug(f"Found {len(items)} li.p-grid-item elements in DOM.")
 
         if not items:
             logging.warning("No product cards found in .p-grid-item elements.")
