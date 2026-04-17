@@ -7,8 +7,6 @@ def get_weekly_ad(store_id, user=None):
     url = f"https://www.publix.com/savings/weekly-ad/view-all?storeid={store_id}"
     logging.debug(f"Opening weekly ad URL: {url}")
 
-    start_time = time.time()
-
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True, args=[
             "--no-sandbox",
@@ -31,7 +29,6 @@ def get_weekly_ad(store_id, user=None):
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
             },
         )
-        # Mask navigator.webdriver to avoid bot detection
         context.add_init_script("""
             Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
             Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3] });
@@ -40,30 +37,19 @@ def get_weekly_ad(store_id, user=None):
         page = context.new_page()
         page.set_default_timeout(60000)
 
-        # Capture JSON responses to find the weekly ad API endpoint
-        captured = []
-
         def on_response(response):
             try:
-                if "publix.com" in response.url and response.status == 200:
-                    ct = response.headers.get("content-type", "")
-                    if "json" in ct:
-                        logging.debug(f"JSON response: {response.url}")
-                        captured.append((response.url, response.body()))
-            except Exception:
-                pass
+                if "storeproductssavings" in response.url and response.status == 200:
+                    logging.debug(f"SAVINGS URL: {response.url}")
+                    logging.debug(f"SAVINGS HEADERS: {dict(response.request.headers)}")
+                    body = response.body()
+                    logging.debug(f"SAVINGS BODY: {body[:3000].decode('utf-8', errors='replace')}")
+            except Exception as e:
+                logging.debug(f"Response capture error: {e}")
 
         page.on("response", on_response)
         page.goto(url, wait_until="domcontentloaded")
-        time.sleep(10)
-
-        logging.debug(f"Captured {len(captured)} JSON responses:")
-        for cap_url, _ in captured:
-            logging.debug(f"  {cap_url}")
+        time.sleep(15)
 
         browser.close()
         return []
-
-    elapsed = time.time() - start_time
-    logging.debug(f"Scraping completed in {elapsed:.2f} seconds. Found {len(sale_items)} items.")
-    return sale_items
