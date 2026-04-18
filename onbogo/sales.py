@@ -92,19 +92,19 @@ def _resolve_store_num(store_id):
     return str(store_id)
 
 
-def _build_payload(source):
+def _build_payload(source, skip=0):
     return {
         "operationName": "GetStoreProductsSavingsSearchResultAsync",
         "variables": {
             "keyword": "",
             "boostBuryQuery": "",
-            "skip": 0,
+            "skip": skip,
             "source": source,
             "sortOrder": "",
-            "take": 200,
+            "take": 100,
             "minMatch": 0,
             "segmentVarIndex": 0,
-            "filterQuery": "",
+            "filterQuery": "onSale:true",
             "getOrderHistory": False,
             "intents": [],
             "isPreviewSite": False,
@@ -140,29 +140,41 @@ def get_weekly_ad(store_id, user=None):
     products = []
     for source in ("WEB_WEEKLYAD", "WEB_WEEKLYADVIEWALL", "WEB_SAVINGS", "WEB_PROMOBANNER"):
         session.headers["x-src"] = source
-        try:
-            resp = session.post(_GRAPHQL_URL, json=_build_payload(source), timeout=30)
-            if not resp.ok:
-                logging.debug(f"source={source}: HTTP {resp.status_code} — {resp.text[:200]}")
-                continue
-            result = (resp.json().get("data") or {}).get("storeProductsSavingsSearchResult") or {}
-            batch = result.get("storeProducts") or []
-            logging.debug(f"source={source}: {len(batch)} products (totalCount={result.get('totalCount', 0)})")
-            if batch:
-                products = batch
+        skip = 0
+        page_products = []
+        while True:
+            try:
+                resp = session.post(_GRAPHQL_URL, json=_build_payload(source, skip=skip), timeout=30)
+                if not resp.ok:
+                    logging.debug(f"source={source} skip={skip}: HTTP {resp.status_code} — {resp.text[:200]}")
+                    break
+                result = (resp.json().get("data") or {}).get("storeProductsSavingsSearchResult") or {}
+                batch = result.get("storeProducts") or []
+                total = result.get("totalCount", 0)
+                logging.debug(f"source={source} skip={skip}: {len(batch)} products (totalCount={total})")
+                if not batch:
+                    break
+                page_products.extend(batch)
+                skip += len(batch)
+                # Stop paginating after 500 items or when we have all results
+                if skip >= total or skip >= 500:
+                    break
+            except Exception as e:
+                logging.error(f"API call failed for source={source} skip={skip}: {e}")
                 break
-        except Exception as e:
-            logging.error(f"API call failed for source={source}: {e}")
+        if page_products:
+            products = page_products
+            break
 
     sale_items = [
         {
-            "title": p.get("title", ""),
-            "deal": p.get("savingLine", ""),
-            "price_info": p.get("priceLine", ""),
+            "title": p.get("title") or "",
+            "deal": p.get("savingLine") or p.get("promoMsg") or "",
+            "price_info": p.get("priceLine") or "",
             "valid_dates": p.get("promoValidThruMsg") or "",
         }
         for p in products
-        if p.get("onSale")
+        if p.get("onSale") and (p.get("savingLine") or p.get("promoMsg"))
     ]
 
     elapsed = time.time() - start_time
