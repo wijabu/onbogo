@@ -1,5 +1,21 @@
 {% extends "base.html" %}
 {% block title %}Login Page{% endblock %}
+
+{% block end_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var form = document.querySelector('form[action="/login"]');
+        if (!form) return;
+        form.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+                e.preventDefault();
+                form.submit();
+            }
+        });
+    });
+</script>
+{% endblock %}
+
 {% block content %}
 
 <div class="container d-flex justify-content-center align-items-center mt-5">
