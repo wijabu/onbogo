@@ -65,13 +65,26 @@ def _resolve_store_num(store_id):
             timeout=20,
         )
         if resp.ok:
-            for store in resp.json().get("stores", []):
+            stores = resp.json().get("stores", [])
+            logging.debug(f"Store locator returned {len(stores)} stores")
+            # Log first store's full structure so we can verify field names
+            if stores:
+                logging.debug(f"Sample store keys: {list(stores[0].keys())}")
+                logging.debug(f"Sample store data: {stores[0]}")
+            for store in stores:
                 wa = store.get("weeklyAd")
                 if wa and int(wa.get("storeId", 0)) == store_id_int:
                     num = str(store["storeNumber"])
+                    logging.debug(f"Matched store: storeNumber={num}, weeklyAd={wa}, name={store.get('name')}")
                     _store_num_cache[store_id_int] = num
-                    logging.debug(f"Resolved store_id {store_id} → store_num {num}")
                     return num
+                # Also check top-level storeId fields
+                for field in ("storeId", "locationId", "id"):
+                    if str(store.get(field, "")) == str(store_id_int):
+                        num = str(store["storeNumber"])
+                        logging.debug(f"Matched via top-level field '{field}': storeNumber={num}")
+                        _store_num_cache[store_id_int] = num
+                        return num
         logging.warning(f"store_id {store_id} not found in store locator response")
     except Exception as e:
         logging.error(f"Store locator API failed: {e}")
@@ -125,7 +138,7 @@ def get_weekly_ad(store_id, user=None):
     })
 
     products = []
-    for source in ("WEB_WEEKLYAD", "WEB_WEEKLYADVIEWALL", "WEB_SAVINGS"):
+    for source in ("WEB_WEEKLYAD", "WEB_WEEKLYADVIEWALL", "WEB_SAVINGS", "WEB_PROMOBANNER"):
         session.headers["x-src"] = source
         try:
             resp = session.post(_GRAPHQL_URL, json=_build_payload(source), timeout=30)
