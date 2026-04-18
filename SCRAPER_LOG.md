@@ -147,6 +147,24 @@ GET https://services.publix.com/storelocator/api/v1/stores/?count=3000&distance=
 
 **Expected result:** Store num resolves to `472`, API call succeeds with HTTP 200, products returned.
 
+**Actual result:** ✅ Store number resolved correctly — Springs Plaza → `storeNumber=1428` (not 472; that was a wrong assumption from Playwright context). Store locator API works perfectly.
+
+---
+
+## Change 10 — Find correct `source` value and fix TypeError
+
+**Why:** Change 9 confirmed store number resolves to 1428. But all three guessed source values (`WEB_WEEKLYAD`, `WEB_WEEKLYADVIEWALL`, `WEB_SAVINGS`) returned `"Bad Request - Invalid Source"`. Added `WEB_PROMOBANNER` as fallback — it returned HTTP 200 with 100 products, totalCount=35372.
+
+**Problem:** `WEB_PROMOBANNER` with empty keyword returns the entire product catalog (35,372 items), not just the weekly ad. Three items came back with `onSale: True` but `savingLine: None`, causing `TypeError: sequence item 2: expected str instance, NoneType found` in onbogo.py when building the notification message.
+
+**Changes:**
+- Added `filterQuery: "onSale:true"` to the GraphQL payload (should reduce result set)
+- Added pagination (up to 500 items, 100 per page)
+- Fixed None → `""` for all string fields in sale item builder
+- Added filter: only include items where `savingLine` or `promoMsg` is non-null
+
+**Expected result:** TypeError fixed. Need to check if filterQuery reduces the set and if weekly ad BOGO items appear.
+
 **Actual result:** *(pending — deploy and test)*
 
 ---
@@ -157,7 +175,7 @@ GET https://services.publix.com/storelocator/api/v1/stores/?count=3000&distance=
 |---|---|
 | Store | Springs Plaza |
 | Location ID (URL) | 2655116 |
-| Store Number (API header) | 472 |
+| Store Number (API header) | 1428 (not 472 — that was a wrong assumption) |
 | GraphQL endpoint | `https://services.publix.com/search/api/search/storeproductssavings/` |
 | Store locator endpoint | `https://services.publix.com/storelocator/api/v1/stores/` |
 | Correct source value for weekly ad | Unknown — to be determined by test |
