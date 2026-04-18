@@ -165,7 +165,22 @@ GET https://services.publix.com/storelocator/api/v1/stores/?count=3000&distance=
 
 **Expected result:** TypeError fixed. Need to check if filterQuery reduces the set and if weekly ad BOGO items appear.
 
-**Actual result:** *(pending — deploy and test)*
+**Actual result:** ❌ `filterQuery: "onSale:true"` broke all sources — returned HTTP 200 with 0 results everywhere (including previously-working `WEB_PROMOBANNER`). The Solr field syntax was wrong.
+
+---
+
+## Change 11 — Remove broken filterQuery, sort by savings, try more source values
+
+**Why:** filterQuery=onSale:true returned 0 results for all sources. Need to find a source that returns only weekly-ad items, or sort `WEB_PROMOBANNER` results so deals appear first.
+
+**Changes:**
+- Removed `filterQuery` (back to `""`)
+- Added `sortOrder: "promoTotalSavings desc"` — should surface highest-value deals first
+- Added more source candidates: `WEB_WEEKLY_AD`, `WEEKLY_AD`, `WEB_WEEKLYADALL`
+
+**Expected result:** If any new source is valid AND returns weekly ad items, it will break the loop early. Otherwise `WEB_PROMOBANNER` will run with deals sorted first, and Python filter catches items with promoMsg.
+
+**Actual result:** *(pending)*
 
 ---
 
