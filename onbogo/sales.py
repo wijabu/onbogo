@@ -100,11 +100,11 @@ def _build_payload(source, skip=0):
             "boostBuryQuery": "",
             "skip": skip,
             "source": source,
-            "sortOrder": "",
+            "sortOrder": "promoTotalSavings desc",
             "take": 100,
             "minMatch": 0,
             "segmentVarIndex": 0,
-            "filterQuery": "onSale:true",
+            "filterQuery": "",
             "getOrderHistory": False,
             "intents": [],
             "isPreviewSite": False,
@@ -138,7 +138,9 @@ def get_weekly_ad(store_id, user=None):
     })
 
     products = []
-    for source in ("WEB_WEEKLYAD", "WEB_WEEKLYADVIEWALL", "WEB_SAVINGS", "WEB_PROMOBANNER"):
+    for source in ("WEB_WEEKLYAD", "WEB_WEEKLYADVIEWALL", "WEB_SAVINGS",
+                   "WEB_WEEKLY_AD", "WEEKLY_AD", "WEB_WEEKLYADALL",
+                   "WEB_PROMOBANNER"):
         session.headers["x-src"] = source
         skip = 0
         page_products = []
