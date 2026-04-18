@@ -1,4 +1,5 @@
 import ast
+import logging
 import time
 
 from functools import wraps
@@ -223,20 +224,8 @@ def find_sales():
     user = session.get("user", {})
     my_store = user.get("my_store", {})
 
-    my_sale_items = []
-
-    try:
-        # Run scraping/processing function
-        my_sale_items = onbogo.run(user=user)
-
-    except Exception as e:
-        logging.error("Error in /find_sales route while scraping:", exc_info=True)
-        # If partial results exist, we still render them
-        if not my_sale_items:
-            my_sale_items = []
-
-    # Always render the sales page with whatever results were obtained
-    return render_template("sales.html", my_store=my_store, my_sale_items=my_sale_items)
+    my_sale_items = onbogo.run(user=user)
+    return render_template("sales.html", my_store=my_store, my_sale_items=my_sale_items, loading=True)
 
 
 @views.route("/locate", methods=["GET", "POST"])

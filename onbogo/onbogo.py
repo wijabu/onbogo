@@ -1,7 +1,6 @@
 #!usr/bin/env python3
 
 import logging
-from flask import jsonify
 
 from . import notify
 from . import sales
@@ -22,7 +21,7 @@ def run(user):
 
         if not store_id:
             logging.warning(f"No store saved to profile for user: {user['_id']}. Unable to find sales.")
-            return jsonify(error="No store found for this user."), 400
+            return []
 
         # Launch scraping function (driver managed internally)
         all_sale_items = sales.get_weekly_ad(store_id, user)
@@ -50,11 +49,11 @@ def run(user):
         logging.debug(f"Notifications sent to {user['username']}!")
         logging.debug(f"Notifications length: {len(alert_msg)}!")
 
-        return all_sale_items, 200
+        return all_sale_items
 
     except Exception as e:
         logging.error(f"App run error: {e}", exc_info=True)
-        return jsonify(error="Unable to run app with this user. Verify required data found in user profile."), 400
+        return []
 
 
 def run_schedule():
