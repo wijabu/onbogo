@@ -7,6 +7,7 @@ import smtplib
 import ssl
 import json
 import logging
+from email.mime.text import MIMEText
 from dotenv import load_dotenv
 
 load_dotenv()  # take environment variables from .env.
@@ -32,13 +33,16 @@ def send_email(
 ):
     sender_email, email_password = sender_credentials
 
-    email_message = f"Subject:{subject}\nTo:{receiver_email}\n{message}"
+    msg = MIMEText(message, 'plain', 'utf-8')
+    msg['Subject'] = subject
+    msg['To'] = receiver_email
+    msg['From'] = sender_email
 
     conn = smtplib.SMTP(smtp_server, smtp_port)
     conn.ehlo()
     conn.starttls()
     conn.login(sender_email, email_password)
-    conn.sendmail(sender_email, receiver_email, email_message)
+    conn.sendmail(sender_email, receiver_email, msg.as_string())
     conn.quit()
 
 
@@ -54,13 +58,16 @@ def send_sms_via_email(
     sender_email, email_password = sender_credentials
     receiver_email = f"{number}@{providers.get(provider).get('sms')}"
 
-    email_message = f"Subject:{subject}\nTo:{receiver_email}\n{message}"
+    msg = MIMEText(message, 'plain', 'utf-8')
+    msg['Subject'] = subject
+    msg['To'] = receiver_email
+    msg['From'] = sender_email
 
     with smtplib.SMTP_SSL(
         smtp_server, smtp_port, context=ssl.create_default_context()
     ) as email:
         email.login(sender_email, email_password)
-        email.sendmail(sender_email, receiver_email, email_message)
+        email.sendmail(sender_email, receiver_email, msg.as_string())
 
 
 def send_push(message: str, push_credentials: tuple):

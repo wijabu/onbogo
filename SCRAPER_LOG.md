@@ -178,7 +178,20 @@ GET https://services.publix.com/storelocator/api/v1/stores/?count=3000&distance=
 - Added `sortOrder: "promoTotalSavings desc"` — should surface highest-value deals first
 - Added more source candidates: `WEB_WEEKLY_AD`, `WEEKLY_AD`, `WEB_WEEKLYADALL`
 
-**Expected result:** If any new source is valid AND returns weekly ad items, it will break the loop early. Otherwise `WEB_PROMOBANNER` will run with deals sorted first, and Python filter catches items with promoMsg.
+**Actual result:** ✅ Scraper working. New source candidates all returned "Bad Request - Invalid Source". `WEB_PROMOBANNER` ran, returned 500 items (out of totalCount=35,372) sorted by savings. After Python filter (`onSale=True` and `savingLine or promoMsg` non-null), real weekly ad BOGO deals surfaced — e.g. "Jinx Dog Food - Buy 1 Get 1 Free", "Pompeian Olive Oil - Buy 1 Get 1 Free", Coca-Cola multi-pack deals, all valid 4/16–4/22. Email send failed with UnicodeEncodeError (see Change 12).
+
+---
+
+## Change 12 — Fix UnicodeEncodeError in notify.py
+
+**Why:** Product titles like "Café Bustelo" contain non-ASCII characters (é = U+00E9). `smtplib.sendmail()` called `.encode('ascii')` on the raw f-string email, causing `UnicodeEncodeError: 'ascii' codec can't encode character '\xe9'`.
+
+**Changes:**
+- Added `from email.mime.text import MIMEText` import
+- Replaced raw `f"Subject:...\n{message}"` string with `MIMEText(message, 'plain', 'utf-8')` in both `send_email()` and `send_sms_via_email()`
+- Pass `msg.as_string()` to `sendmail()` — MIMEText handles Content-Type and charset headers automatically
+
+**Expected result:** Emails send successfully regardless of accented/non-ASCII characters in product titles.
 
 **Actual result:** *(pending)*
 
