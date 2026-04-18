@@ -77,7 +77,7 @@ Google Cloud has a built-in browser SSH — no key file needed.
 
 ## Step 5 — Add a Swap File
 
-The e2-micro only has 1 GB RAM. Adding swap prevents the app from crashing if memory gets tight (e.g. during Playwright scraping).
+The e2-micro only has 1 GB RAM. Adding swap prevents the app from crashing if memory gets tight.
 
 ```bash
 sudo fallocate -l 1G /swapfile
@@ -96,13 +96,6 @@ sudo apt update && sudo apt upgrade -y
 
 # Python and git
 sudo apt install -y python3-pip python3-venv git
-
-# System libraries required by Playwright's Chromium browser
-sudo apt install -y \
-  libglib2.0-0 libnss3 libfontconfig1 libxss1 \
-  libxtst6 libx11-xcb1 libxcomposite1 libxdamage1 libxrandr2 \
-  libgbm1 libasound2 libatk1.0-0 libatk-bridge2.0-0 \
-  libpango-1.0-0 libcairo2 libdrm2 libxfixes3 libxkbcommon0
 ```
 
 ---
@@ -120,9 +113,6 @@ source venv/bin/activate
 
 # Install Python dependencies
 pip install -r requirements.txt
-
-# Install Chromium browser for Playwright
-python -m playwright install chromium
 ```
 
 ---

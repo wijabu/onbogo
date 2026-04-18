@@ -1,3 +1,4 @@
+import json
 import logging
 import time
 import requests
@@ -65,12 +66,8 @@ def _resolve_store_num(store_id):
             timeout=20,
         )
         if resp.ok:
-            stores = resp.json().get("stores", [])
+            stores = json.loads(resp.content.decode('utf-8')).get("stores", [])
             logging.debug(f"Store locator returned {len(stores)} stores")
-            # Log first store's full structure so we can verify field names
-            if stores:
-                logging.debug(f"Sample store keys: {list(stores[0].keys())}")
-                logging.debug(f"Sample store data: {stores[0]}")
             for store in stores:
                 wa = store.get("weeklyAd")
                 if wa and int(wa.get("storeId", 0)) == store_id_int:
@@ -150,7 +147,7 @@ def get_weekly_ad(store_id, user=None):
                 if not resp.ok:
                     logging.debug(f"source={source} skip={skip}: HTTP {resp.status_code} — {resp.text[:200]}")
                     break
-                result = (resp.json().get("data") or {}).get("storeProductsSavingsSearchResult") or {}
+                result = (json.loads(resp.content.decode('utf-8')).get("data") or {}).get("storeProductsSavingsSearchResult") or {}
                 batch = result.get("storeProducts") or []
                 total = result.get("totalCount", 0)
                 logging.debug(f"source={source} skip={skip}: {len(batch)} products (totalCount={total})")

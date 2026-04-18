@@ -191,7 +191,24 @@ GET https://services.publix.com/storelocator/api/v1/stores/?count=3000&distance=
 - Replaced raw `f"Subject:...\n{message}"` string with `MIMEText(message, 'plain', 'utf-8')` in both `send_email()` and `send_sms_via_email()`
 - Pass `msg.as_string()` to `sendmail()` — MIMEText handles Content-Type and charset headers automatically
 
-**Expected result:** Emails send successfully regardless of accented/non-ASCII characters in product titles.
+**Actual result:** ✅ Email sent successfully. No UnicodeEncodeError. "Notifications sent to jameswillish!" confirmed in logs. Note: API returns "CafÃ©" (mojibake) instead of "Café" — this is a data encoding issue in the Publix API response, not our code. The email still sends fine.
+
+---
+
+## Change 13 — Fix mojibake, remove verbose logging, rewrite store.py
+
+**Why:** Three cleanup items after end-to-end success:
+1. Product titles like "CafÃ©" (should be "Café") — the Publix API returns data with wrong Content-Type charset, causing `requests` to decode UTF-8 bytes as Latin-1.
+2. Store locator was logging the full first-store JSON blob (verbose noise, no longer needed).
+3. `store.py` still used Playwright + `accessibleweeklyad.publix.com` (unreachable site).
+
+**Changes:**
+- `sales.py`: Added `import json`; replaced all `resp.json()` calls with `json.loads(resp.content.decode('utf-8'))` to force UTF-8 regardless of Content-Type header; removed sample store key/data debug lines
+- `store.py`: Rewrote entirely — no Playwright; geocodes zip → lat/lon via Nominatim (free, no key), then calls store locator API; returns `[{title, address, store_id}]` same shape as before
+- `requirements.txt`: Removed `playwright`, `beautifulsoup4`, `bs4`, `soupsieve` (none used)
+- `DEPLOY.md`: Removed Playwright system lib install steps and `playwright install chromium`
+
+**Expected result:** No more mojibake in product titles. Store search by zip works. Faster deploys (no Playwright install).
 
 **Actual result:** *(pending)*
 
