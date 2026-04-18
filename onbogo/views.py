@@ -222,10 +222,11 @@ def find():
 @login_required
 def find_sales():
     user = session.get("user", {})
-    my_store = user.get("my_store", {})
 
     my_sale_items = onbogo.run(user=user)
-    return render_template("sales.html", my_store=my_store, my_sale_items=my_sale_items, loading=True)
+    session["my_sale_items"] = my_sale_items
+    session.modified = True
+    return "", 200
 
 
 @views.route("/locate", methods=["GET", "POST"])

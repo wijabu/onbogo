@@ -37,6 +37,15 @@ _GRAPHQL_QUERY = (
 
 _UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
 
+
+def _fix(s):
+    if not s:
+        return s
+    try:
+        return s.encode('latin-1').decode('utf-8')
+    except (UnicodeEncodeError, UnicodeDecodeError):
+        return s
+
 # In-memory cache so the store locator API is only called once per process lifetime
 _store_num_cache = {}
 
@@ -167,10 +176,10 @@ def get_weekly_ad(store_id, user=None):
 
     sale_items = [
         {
-            "title": p.get("title") or "",
-            "deal": p.get("savingLine") or p.get("promoMsg") or "",
-            "price_info": p.get("priceLine") or "",
-            "valid_dates": p.get("promoValidThruMsg") or "",
+            "title": _fix(p.get("title") or ""),
+            "deal": _fix(p.get("savingLine") or p.get("promoMsg") or ""),
+            "price_info": _fix(p.get("priceLine") or ""),
+            "valid_dates": _fix(p.get("promoValidThruMsg") or ""),
         }
         for p in products
         if p.get("onSale") and (p.get("savingLine") or p.get("promoMsg"))
