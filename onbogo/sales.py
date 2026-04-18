@@ -40,26 +40,45 @@ _UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like
 def _resolve_store_num(store_id):
     """
     Publix URL uses a location ID (e.g. 2655116) but the API header needs
-    the store number (e.g. 472). Extract it from the weekly ad page HTML.
+    the store number (e.g. 472). Try several discovery methods.
     """
+    headers = {"user-agent": _UA, "accept-language": "en-US,en;q=0.9",
+               "accept": "application/json, text/html, */*"}
+
+    # Method 1: navigation API (called by Vue app during page init)
+    try:
+        resp = requests.get(
+            "https://www.publix.com/navigationApi/secondaryNavigation",
+            headers={**headers, "referer": f"https://www.publix.com/savings/weekly-ad/view-all?storeid={store_id}"},
+            cookies={"pblxStoreId": str(store_id), "selectedStore": str(store_id)},
+            timeout=15,
+        )
+        logging.debug(f"navApi status={resp.status_code} body={resp.text[:500]}")
+        for pat in [r'"storeNumber"\s*:\s*"?(\d+)"?', r'"storeNbr"\s*:\s*"?(\d+)"?',
+                    r'"store_number"\s*:\s*"?(\d+)"?', r'"storeNum"\s*:\s*"?(\d+)"?']:
+            m = re.search(pat, resp.text, re.IGNORECASE)
+            if m:
+                logging.debug(f"navApi: store_id {store_id} → {m.group(1)}")
+                return m.group(1)
+    except Exception as e:
+        logging.debug(f"navApi lookup failed: {e}")
+
+    # Method 2: weekly ad page HTML
     try:
         resp = requests.get(
             f"https://www.publix.com/savings/weekly-ad/view-all?storeid={store_id}",
-            headers={"user-agent": _UA, "accept-language": "en-US,en;q=0.9"},
-            timeout=20,
+            headers=headers, timeout=20,
         )
-        for pat in [
-            r'"storeNumber"\s*:\s*"?(\d+)"?',
-            r'"storeNbr"\s*:\s*"?(\d+)"?',
-            r'"storeNum"\s*:\s*"?(\d+)"?',
-            r'publixstore["\s:]+(\d+)',
-        ]:
+        logging.debug(f"weeklyad HTML snippet: {resp.text[3000:5000]}")
+        for pat in [r'"storeNumber"\s*:\s*"?(\d+)"?', r'"storeNbr"\s*:\s*"?(\d+)"?',
+                    r'"storeNum"\s*:\s*"?(\d+)"?', r'publixstore["\s:]+(\d+)']:
             m = re.search(pat, resp.text, re.IGNORECASE)
             if m:
-                logging.debug(f"Resolved store_id {store_id} → {m.group(1)}")
+                logging.debug(f"HTML: store_id {store_id} → {m.group(1)}")
                 return m.group(1)
     except Exception as e:
-        logging.debug(f"Store num lookup failed: {e}")
+        logging.debug(f"HTML lookup failed: {e}")
+
     logging.warning(f"Could not resolve store num for {store_id}, using it directly")
     return str(store_id)
 
@@ -114,8 +133,12 @@ def get_weekly_ad(store_id, user=None):
         session.headers["x-src"] = source
         try:
             resp = session.post(_GRAPHQL_URL, json=_build_payload(source), timeout=30)
+            logging.debug(f"source={source}: HTTP {resp.status_code}")
+            if not resp.ok:
+                logging.debug(f"source={source} error body: {resp.text[:300]}")
+                continue
             data = resp.json()
-            result = data.get("data", {}).get("storeProductsSavingsSearchResult", {})
+            result = (data.get("data") or {}).get("storeProductsSavingsSearchResult") or {}
             batch = result.get("storeProducts") or []
             total = result.get("totalCount", 0)
             logging.debug(f"source={source}: {len(batch)} products (totalCount={total})")
