@@ -1,9 +1,9 @@
 import logging
-import re
 import time
 import requests
 
 _GRAPHQL_URL = "https://services.publix.com/search/api/search/storeproductssavings/"
+_STORE_LOCATOR_URL = "https://services.publix.com/storelocator/api/v1/stores/"
 
 _GRAPHQL_QUERY = (
     "query GetStoreProductsSavingsSearchResultAsync("
@@ -36,54 +36,50 @@ _GRAPHQL_QUERY = (
 
 _UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
 
+# In-memory cache so the store locator API is only called once per process lifetime
+_store_num_cache = {}
+
 
 def _resolve_store_num(store_id):
     """
-    Publix URL uses a location ID (e.g. 2655116) but the API header needs
-    the store number (e.g. 472). Try several discovery methods.
+    The weekly-ad URL uses a location ID (e.g. 2655116) but the GraphQL API
+    header needs the short store number (e.g. 472, which fits in an Int16).
+    Resolve via the Publix store locator API which returns both fields.
     """
-    headers = {"user-agent": _UA, "accept-language": "en-US,en;q=0.9",
-               "accept": "application/json, text/html, */*"}
+    store_id_int = int(store_id)
+    if store_id_int in _store_num_cache:
+        return _store_num_cache[store_id_int]
 
-    # Method 1: navigation API (called by Vue app during page init)
     try:
         resp = requests.get(
-            "https://www.publix.com/navigationApi/secondaryNavigation",
-            headers={**headers, "referer": f"https://www.publix.com/savings/weekly-ad/view-all?storeid={store_id}"},
-            cookies={"pblxStoreId": str(store_id), "selectedStore": str(store_id)},
-            timeout=15,
+            _STORE_LOCATOR_URL,
+            params={
+                "count": 3000,
+                "distance": 5000,
+                "includeOpenAndCloseDates": "true",
+                "isWebsite": "true",
+                "latitude": 27.0,   # central Florida — large radius covers all Publix states
+                "longitude": -81.5,
+            },
+            headers={"user-agent": _UA, "accept": "application/json"},
+            timeout=20,
         )
-        logging.debug(f"navApi status={resp.status_code} body={resp.text[:500]}")
-        for pat in [r'"storeNumber"\s*:\s*"?(\d+)"?', r'"storeNbr"\s*:\s*"?(\d+)"?',
-                    r'"store_number"\s*:\s*"?(\d+)"?', r'"storeNum"\s*:\s*"?(\d+)"?']:
-            m = re.search(pat, resp.text, re.IGNORECASE)
-            if m:
-                logging.debug(f"navApi: store_id {store_id} → {m.group(1)}")
-                return m.group(1)
+        if resp.ok:
+            for store in resp.json().get("stores", []):
+                wa = store.get("weeklyAd")
+                if wa and int(wa.get("storeId", 0)) == store_id_int:
+                    num = str(store["storeNumber"])
+                    _store_num_cache[store_id_int] = num
+                    logging.debug(f"Resolved store_id {store_id} → store_num {num}")
+                    return num
+        logging.warning(f"store_id {store_id} not found in store locator response")
     except Exception as e:
-        logging.debug(f"navApi lookup failed: {e}")
+        logging.error(f"Store locator API failed: {e}")
 
-    # Method 2: weekly ad page HTML
-    try:
-        resp = requests.get(
-            f"https://www.publix.com/savings/weekly-ad/view-all?storeid={store_id}",
-            headers=headers, timeout=20,
-        )
-        logging.debug(f"weeklyad HTML snippet: {resp.text[3000:5000]}")
-        for pat in [r'"storeNumber"\s*:\s*"?(\d+)"?', r'"storeNbr"\s*:\s*"?(\d+)"?',
-                    r'"storeNum"\s*:\s*"?(\d+)"?', r'publixstore["\s:]+(\d+)']:
-            m = re.search(pat, resp.text, re.IGNORECASE)
-            if m:
-                logging.debug(f"HTML: store_id {store_id} → {m.group(1)}")
-                return m.group(1)
-    except Exception as e:
-        logging.debug(f"HTML lookup failed: {e}")
-
-    logging.warning(f"Could not resolve store num for {store_id}, using it directly")
     return str(store_id)
 
 
-def _build_payload(source, take=200):
+def _build_payload(source):
     return {
         "operationName": "GetStoreProductsSavingsSearchResultAsync",
         "variables": {
@@ -92,7 +88,7 @@ def _build_payload(source, take=200):
             "skip": 0,
             "source": source,
             "sortOrder": "",
-            "take": take,
+            "take": 200,
             "minMatch": 0,
             "segmentVarIndex": 0,
             "filterQuery": "",
@@ -133,30 +129,28 @@ def get_weekly_ad(store_id, user=None):
         session.headers["x-src"] = source
         try:
             resp = session.post(_GRAPHQL_URL, json=_build_payload(source), timeout=30)
-            logging.debug(f"source={source}: HTTP {resp.status_code}")
             if not resp.ok:
-                logging.debug(f"source={source} error body: {resp.text[:300]}")
+                logging.debug(f"source={source}: HTTP {resp.status_code} — {resp.text[:200]}")
                 continue
-            data = resp.json()
-            result = (data.get("data") or {}).get("storeProductsSavingsSearchResult") or {}
+            result = (resp.json().get("data") or {}).get("storeProductsSavingsSearchResult") or {}
             batch = result.get("storeProducts") or []
-            total = result.get("totalCount", 0)
-            logging.debug(f"source={source}: {len(batch)} products (totalCount={total})")
+            logging.debug(f"source={source}: {len(batch)} products (totalCount={result.get('totalCount', 0)})")
             if batch:
                 products = batch
                 break
         except Exception as e:
             logging.error(f"API call failed for source={source}: {e}")
 
-    sale_items = []
-    for p in products:
-        if p.get("onSale"):
-            sale_items.append({
-                "title": p.get("title", ""),
-                "deal": p.get("savingLine", ""),
-                "price_info": p.get("priceLine", ""),
-                "valid_dates": p.get("promoValidThruMsg", "") or "",
-            })
+    sale_items = [
+        {
+            "title": p.get("title", ""),
+            "deal": p.get("savingLine", ""),
+            "price_info": p.get("priceLine", ""),
+            "valid_dates": p.get("promoValidThruMsg") or "",
+        }
+        for p in products
+        if p.get("onSale")
+    ]
 
     elapsed = time.time() - start_time
     logging.debug(f"Scraping done in {elapsed:.2f}s. Found {len(sale_items)} sale items.")
