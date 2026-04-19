@@ -4,30 +4,22 @@ Tracked backlog of things we've identified but deferred. Ordered by rough priori
 
 ---
 
-## 1. Custom DNS name + HTTPS
+## 1. Custom DNS name + HTTPS — IN PROGRESS
 
-**Goal:** replace `http://<vm-ip>:8080` with something like `https://onbogo.example.com`.
+**Code prep done:**
+- [Caddyfile](Caddyfile) template in repo root (placeholder `YOUR_HOSTNAME`).
+- Flask wrapped with `ProxyFix` in [onbogo/__init__.py](onbogo/__init__.py) so it trusts `X-Forwarded-Proto`/`Host` from Caddy and `url_for(_external=True)` emits `https://` URLs.
+- Full deploy runbook added to [DEPLOY.md](DEPLOY.md) — "Custom Domain + HTTPS (Caddy)" section, Steps A–F.
 
-**Steps:**
-1. **Reserve a static external IP** in Google Cloud Console → VPC Network → IP addresses. Free while attached to a running VM. Attach it to the `onbogo` instance so the IP stops changing on restart.
-2. **Register a domain** (Namecheap / Cloudflare / Porkbun, ~$10/yr) *or* use a free subdomain service (duckdns.org, freedns.afraid.org).
-3. **Create an A record** pointing the hostname → static IP.
-4. **Open port 443** in GCP firewall (we already have 80 and 8080).
-5. **Install Caddy** on the VM (simpler than nginx + certbot):
-   ```bash
-   sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https
-   curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
-   curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | sudo tee /etc/apt/sources.list.d/caddy-stable.list
-   sudo apt update && sudo apt install caddy
-   ```
-6. **Configure Caddy** — edit `/etc/caddy/Caddyfile`:
-   ```
-   onbogo.example.com {
-       reverse_proxy localhost:8080
-   }
-   ```
-7. **Reload Caddy**: `sudo systemctl reload caddy`. It auto-provisions a Let's Encrypt cert on first request.
-8. **Optional:** close port 8080 in GCP firewall once 443 is working, so the app is only reachable via the domain.
+**Hostname chosen:** `onbogo.duckdns.org` (free). Caddyfile already wired for it.
+
+**Left to do (operational, on GCP console + VM):**
+1. Reserve a static IP in GCP (DEPLOY.md Step A).
+2. Register `onbogo` on duckdns.org and point it at the static IP (Step B).
+3. Open port 443 in GCP firewall (Step C).
+4. SSH into VM, install Caddy (Step D), copy `Caddyfile` into `/etc/caddy/` and reload (Step E).
+5. Verify cert provisioned, hit `https://onbogo.duckdns.org`.
+6. Optional: close port 8080 publicly (Step F).
 
 ---
 
@@ -53,7 +45,31 @@ Implemented:
 
 ---
 
-## 4. Other polish items (low priority)
+## 4. Rate limiting on /login and /reset (post-launch)
+
+Once live on HTTPS, `/login` and `/reset` are more exposed than they were on `http://<ip>:8080`. Neither has any throttling today.
+
+**Risks:**
+- Password brute-force against `/login`.
+- Email-flooding abuse via `/reset` (the endpoint correctly avoids account enumeration, but still sends an email per valid address submitted).
+
+**Fix:** add [flask-limiter](https://flask-limiter.readthedocs.io/) with ~5 req/min per IP on both endpoints. In-memory backend is fine for a single-worker gunicorn; swap to Redis later if we scale to multiple workers.
+
+Not blocking for launch — the app is invite-only (access code gating on `/register`), so exposure is limited.
+
+---
+
+## 5. Backup DDNS option (if duckdns.org flakes)
+
+Architect review surfaced that DuckDNS had an unexplained outage in August 2025 with no status communication. If it happens again during a scheduled Thursday job or password-reset flow, the app is effectively offline for anyone hitting it by hostname.
+
+**Backup option:** [Dynu](https://www.dynu.com) — free, 4-hostname cap, higher uptime reputation, same A-record workflow. Can be wired up in parallel (both DNS records pointing at the static IP) so a fallback hostname exists if DuckDNS goes dark.
+
+Not blocking — only act if DuckDNS reliability becomes a real problem.
+
+---
+
+## 6. Other polish items (low priority)
 
 - **Bootstrap version mismatch:** `base.html` loads Bootstrap 5.3 CSS but Bootstrap 4.0 JS. Components that rely on JS (modals, dropdowns, alert close buttons) may misbehave. Upgrade JS to 5.3 or downgrade CSS to 4.x.
 - **Mojibake still possible in some edge cases.** The `_fix()` helper in [sales.py](onbogo/sales.py) handles the common case (double-UTF-8 decoded as Latin-1) but any string the encoding helper can't round-trip falls back to the original. If we see new mojibake, add an alternate decode path.

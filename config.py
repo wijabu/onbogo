@@ -5,6 +5,8 @@ class Config(object):
     DEBUG = False
     TESTING = False
     SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = "Lax"
 
     SECRET_KEY = config('SECRET_KEY')
 

@@ -7,6 +7,7 @@ import config
 import atexit
 
 from flask import Flask
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from dotenv import load_dotenv
 
@@ -31,6 +32,10 @@ db = client.onbogo
 def create_app():
     app = Flask(__name__)
     app.config.from_object(cfg)
+
+    # Trust X-Forwarded-* headers from Caddy so url_for(_external=True) builds https:// URLs
+    # and request.remote_addr reflects the real client IP.
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
     from .auth import auth
     from .views import views
