@@ -4,22 +4,18 @@ Tracked backlog of things we've identified but deferred. Ordered by rough priori
 
 ---
 
-## 1. Custom DNS name + HTTPS — IN PROGRESS
+## 1. Custom DNS name + HTTPS — DONE
 
-**Code prep done:**
-- [Caddyfile](Caddyfile) template in repo root (placeholder `YOUR_HOSTNAME`).
-- Flask wrapped with `ProxyFix` in [onbogo/__init__.py](onbogo/__init__.py) so it trusts `X-Forwarded-Proto`/`Host` from Caddy and `url_for(_external=True)` emits `https://` URLs.
-- Full deploy runbook added to [DEPLOY.md](DEPLOY.md) — "Custom Domain + HTTPS (Caddy)" section, Steps A–F.
+Live at **https://onbogo.duckdns.org** with Let's Encrypt cert via Caddy reverse proxy.
 
-**Hostname chosen:** `onbogo.duckdns.org` (free). Caddyfile already wired for it.
+- Static IP `34.74.221.234` reserved in GCP as `onbogo-ip`.
+- A record `onbogo.duckdns.org` → static IP.
+- Caddy listening on :80/:443, reverse-proxying to `localhost:8080`. Cert auto-renews every 60 days.
+- Flask sees correct scheme/host via `ProxyFix` (password-reset emails correctly use `https://`).
+- Gunicorn binds to `127.0.0.1:8080` only (see [onbogo.service](onbogo.service)); GCP `allow-8080` firewall rule deleted. Defense in depth: app is unreachable publicly except via Caddy.
+- Session cookies hardened: `Secure`, `HttpOnly`, `SameSite=Lax`.
 
-**Left to do (operational, on GCP console + VM):**
-1. Reserve a static IP in GCP (DEPLOY.md Step A).
-2. Register `onbogo` on duckdns.org and point it at the static IP (Step B).
-3. Open port 443 in GCP firewall (Step C).
-4. SSH into VM, install Caddy (Step D), copy `Caddyfile` into `/etc/caddy/` and reload (Step E).
-5. Verify cert provisioned, hit `https://onbogo.duckdns.org`.
-6. Optional: close port 8080 publicly (Step F).
+**If DuckDNS flakes:** see section 5 for Dynu backup plan.
 
 ---
 
