@@ -50,6 +50,15 @@ class User():
         return jsonify({"ERROR": "Signup failed"}), 400
     
 
+    def update_password(self, email, password):
+        password = pbkdf2_sha256.hash(password)
+        user = db.users.find_one({"email": email})
+        if user:
+            db.users.update_one({"email": email}, {"$set": {"password": password}})
+            return True
+        return False
+
+
     def update_account(self, email, username, password):
         # encrypt the password
         password = pbkdf2_sha256.hash(password)

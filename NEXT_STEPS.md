@@ -31,20 +31,17 @@ Tracked backlog of things we've identified but deferred. Ordered by rough priori
 
 ---
 
-## 2. Password reset flow
+## 2. Password reset flow — DONE
 
-**Not implemented.** The "Forgot password?" link on `login.html` is commented out until this exists.
+Implemented:
+- `GET/POST /reset` — email input form, generates `itsdangerous` token (1-hour expiry, signed with `SECRET_KEY`), sends reset link via `notify.send_email()`. Same response whether email exists or not (prevents account enumeration).
+- `GET/POST /reset/<token>` — verifies token, renders new-password form, updates password hash via `User().update_password()`, redirects to login.
+- Templates: `reset_request.html`, `reset_form.html`.
+- "Forgot password?" link re-enabled on login page.
 
-**What needs building:**
-- **Route `/reset` (GET):** form asking for email.
-- **Route `/reset` (POST):** look up user, generate time-limited token (e.g. `itsdangerous.URLSafeTimedSerializer`, 1-hour expiry), email a link `https://.../reset/<token>`.
-- **Route `/reset/<token>` (GET):** verify token, render "set new password" form.
-- **Route `/reset/<token>` (POST):** verify token again, update password hash via `User().update_account()`, flash success, redirect to login.
-- **Templates:** `reset_request.html` and `reset_form.html`.
-- **Env var:** `SECRET_KEY` (already in .env) is used to sign tokens.
-- **Reuse:** existing `notify.send_email()` for the reset email.
+**To test after deploy:** click Forgot password → enter your email → check inbox → click link → set new password → log in with new password.
 
-Non-trivial but self-contained — maybe a half-day of work.
+**Note:** reset links will initially be `http://<vm-ip>:8080/reset/<token>` until DNS+HTTPS (item 1) is set up.
 
 ---
 

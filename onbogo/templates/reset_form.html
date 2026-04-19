@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Set New Password{% endblock %}
+{% block content %}
+
+<div class="container d-flex justify-content-center align-items-center mt-5">
+    <div class="row flex-fill">
+        <div class="col-md-6 offset-md-3">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title logo">set new password</h5>
+                    <form action="{{ url_for('auth.reset_with_token', token=token) }}" method="POST" class="validated-form" novalidate>
+                        <div class="mb-3">
+                            <label class="form-label" for="password1">new password</label>
+                            <input class="form-control" type="password" name="password1" id="password1" placeholder="at least 8 characters" autofocus required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="password2">confirm password</label>
+                            <input class="form-control" type="password" name="password2" id="password2" placeholder="re-enter password" required>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-secondary btn-block logo">update password</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
