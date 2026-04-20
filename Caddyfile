@@ -1,8 +1,12 @@
 # Caddy config for onbogo. Copy to /etc/caddy/Caddyfile on the VM, then:
 #   sudo systemctl reload caddy
-# Caddy auto-provisions a Let's Encrypt certificate on first request.
+# Caddy auto-provisions a Let's Encrypt certificate per hostname on first request.
+#
+# Primary: onbogo.duckdns.org
+# Backup: onbogo.freeddns.org (Dynu) — in case DuckDNS has another outage.
+# Both A records point at the same static IP; Caddy serves the same app on both.
 
-onbogo.duckdns.org {
+onbogo.duckdns.org, onbogo.freeddns.org {
     encode zstd gzip
     reverse_proxy localhost:8080
 }

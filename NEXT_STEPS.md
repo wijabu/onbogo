@@ -55,13 +55,13 @@ Not blocking for launch — the app is invite-only (access code gating on `/regi
 
 ---
 
-## 5. Backup DDNS option (if duckdns.org flakes)
+## 5. Backup DDNS — DONE
 
-Architect review surfaced that DuckDNS had an unexplained outage in August 2025 with no status communication. If it happens again during a scheduled Thursday job or password-reset flow, the app is effectively offline for anyone hitting it by hostname.
+Dual-hostname setup live:
+- **Primary:** `https://onbogo.duckdns.org`
+- **Backup:** `https://onbogo.freeddns.org` (Dynu)
 
-**Backup option:** [Dynu](https://www.dynu.com) — free, 4-hostname cap, higher uptime reputation, same A-record workflow. Can be wired up in parallel (both DNS records pointing at the static IP) so a fallback hostname exists if DuckDNS goes dark.
-
-Not blocking — only act if DuckDNS reliability becomes a real problem.
+Both A records point at the static IP `34.74.221.234`. Caddy serves the same app on both with separate Let's Encrypt certs. If DuckDNS has another outage, users can reach the app via the Dynu hostname.
 
 ---
 
