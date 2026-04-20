@@ -67,5 +67,4 @@ Both A records point at the static IP `34.74.221.234`. Caddy serves the same app
 
 ## 6. Other polish items (low priority)
 
-- **Mojibake still possible in some edge cases.** The `_fix()` helper in [sales.py](onbogo/sales.py) handles the common case (double-UTF-8 decoded as Latin-1) but any string the encoding helper can't round-trip falls back to the original. If we see new mojibake, add an alternate decode path.
-- **Commented-out "my shopping list" block** in `load.html` can be deleted if we don't plan to bring it back.
+- **Mojibake helper now shared.** `fix_encoding()` lives in [onbogo/text.py](onbogo/text.py) and is applied in both [sales.py](onbogo/sales.py) (product titles/deals) and [store.py](onbogo/store.py) (store names/addresses). If a new encoding edge case appears (e.g. CP1252 smart quotes from a different upstream source), extend the helper there — one place, two callers.

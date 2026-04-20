@@ -4,6 +4,8 @@ import json
 import logging
 import requests
 
+from .text import fix_encoding
+
 _STORE_LOCATOR_URL = "https://services.publix.com/storelocator/api/v1/stores/"
 _GEOCODE_URL = "https://nominatim.openstreetmap.org/search"
 _UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
@@ -63,8 +65,8 @@ def locate(zip_code):
         addr = s.get("address") or {}
         address = f"{addr.get('streetAddress', '')}, {addr.get('city', '')}, {addr.get('state', '')} {addr.get('zip', '')}".strip(", ")
         stores.append({
-            "title": s.get("name", ""),
-            "address": address,
+            "title": fix_encoding(s.get("name", "")),
+            "address": fix_encoding(address),
             "store_id": int(store_id),
         })
         logging.debug(f"Found store: {s.get('name')} (ID: {store_id})")
