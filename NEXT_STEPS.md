@@ -67,7 +67,5 @@ Both A records point at the static IP `34.74.221.234`. Caddy serves the same app
 
 ## 6. Other polish items (low priority)
 
-- **Bootstrap version mismatch:** `base.html` loads Bootstrap 5.3 CSS but Bootstrap 4.0 JS. Components that rely on JS (modals, dropdowns, alert close buttons) may misbehave. Upgrade JS to 5.3 or downgrade CSS to 4.x.
 - **Mojibake still possible in some edge cases.** The `_fix()` helper in [sales.py](onbogo/sales.py) handles the common case (double-UTF-8 decoded as Latin-1) but any string the encoding helper can't round-trip falls back to the original. If we see new mojibake, add an alternate decode path.
-- **`alert-dismissible` close button** in `base.html` uses Bootstrap 4 syntax (`data-dismiss`) but the CSS is Bootstrap 5 (`data-bs-dismiss`). Close button probably doesn't work. Tied to the Bootstrap-version-mismatch item above.
 - **Commented-out "my shopping list" block** in `load.html` can be deleted if we don't plan to bring it back.
