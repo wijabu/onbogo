@@ -80,7 +80,7 @@
                 {% endif %}
 
                 {% if loading: %}
-                <div class="mb-3 text-center my_sale_items">
+                <div class="mb-3 text-center my_sale_items pb-4">
                     <br>
                     <h5>
                         <a id="my_sale_items">– My Sales –</a>
@@ -106,9 +106,12 @@
                     </div>
                     {% endif %}
                     {% if missed_favs %}
-                    <p class="text-secondary fst-italic" style="font-size: 0.9rem;">
-                        No sales this week for: {{ missed_favs|join(", ") }}
-                    </p>
+                    <details class="text-secondary fst-italic mt-2" style="font-size: 0.9rem;">
+                        <summary style="cursor: pointer; list-style-position: inside;">
+                            {{ missed_favs|length }} item{{ 's' if missed_favs|length != 1 else '' }} with no sales this week
+                        </summary>
+                        <p class="mt-2 mb-0">{{ missed_favs|join(", ") }}</p>
+                    </details>
                     {% endif %}
                 </div>
                 <hr>
