@@ -8,6 +8,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 auth = Blueprint("auth", __name__)
 
 from .models import User
+from .extensions import limiter
 from . import db, notify
 
 
@@ -33,6 +34,7 @@ def _verify_reset_token(token):
 
 
 @auth.route("/login", methods=["GET", "POST"])
+@limiter.limit("5 per minute", methods=["POST"])
 def login():
     if request.method == "POST":
         email = request.form["email"]
@@ -60,6 +62,7 @@ def logout():
 
 
 @auth.route("/reset", methods=["GET", "POST"])
+@limiter.limit("3 per minute", methods=["POST"])
 def reset_request():
     if request.method == "POST":
         email = request.form.get("email", "").strip()

@@ -40,7 +40,10 @@ def create_app():
     from .auth import auth
     from .views import views
     from .errors import errors
+    from .extensions import limiter
     from . import onbogo
+
+    limiter.init_app(app)
 
     app.register_blueprint(auth)
     app.register_blueprint(views)

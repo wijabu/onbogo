@@ -41,17 +41,15 @@ Implemented:
 
 ---
 
-## 4. Rate limiting on /login and /reset (post-launch)
+## 4. Rate limiting on /login and /reset — DONE
 
-Once live on HTTPS, `/login` and `/reset` are more exposed than they were on `http://<ip>:8080`. Neither has any throttling today.
+[flask-limiter](https://flask-limiter.readthedocs.io/) wired up with in-memory storage (fine for single-worker gunicorn):
 
-**Risks:**
-- Password brute-force against `/login`.
-- Email-flooding abuse via `/reset` (the endpoint correctly avoids account enumeration, but still sends an email per valid address submitted).
+- `POST /login` — 5 per minute per IP (brute-force protection)
+- `POST /reset` — 3 per minute per IP (email-flood protection)
+- `@errors.app_errorhandler(429)` flashes a friendly message and redirects back to the referring page instead of showing a raw 429.
 
-**Fix:** add [flask-limiter](https://flask-limiter.readthedocs.io/) with ~5 req/min per IP on both endpoints. In-memory backend is fine for a single-worker gunicorn; swap to Redis later if we scale to multiple workers.
-
-Not blocking for launch — the app is invite-only (access code gating on `/register`), so exposure is limited.
+If we ever scale to multiple gunicorn workers, swap `storage_uri` in [onbogo/extensions.py](onbogo/extensions.py) from `memory://` to `redis://` — otherwise each worker counts its own requests independently, multiplying the effective limit.
 
 ---
 
