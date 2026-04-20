@@ -63,6 +63,20 @@ Both A records point at the static IP `34.74.221.234`. Caddy serves the same app
 
 ---
 
-## 6. Other polish items (low priority)
+## 6. Fuzzy keyword matching — DONE
+
+Shopping-list matching is no longer plain substring. See [onbogo/search.py](onbogo/search.py).
+
+- **Normalization:** curly apostrophes → ASCII, accents stripped (`unicodedata.NFKD`), lowercased, punctuation collapsed to spaces. Applied to both the fav and the product title before comparing, so `"Sweet Baby Ray's"` matches `"Sweet Baby Ray\u2019s Original Barbecue Sauce"` and `"Sweet Baby Rays"` alike.
+- **Matching:** `rapidfuzz.fuzz.partial_ratio` with threshold 87. Exact substrings score 100; minor spelling drift still clears 87; unrelated items fall well below.
+- **Misses reported:** [onbogo.py](onbogo/onbogo.py) returns `{"items": [...], "misses": [...favs with zero hits...]}`. Misses surfaced per-fav on the results page ("No sales this week for: bacon, pods") and appended to notification emails.
+- **Input normalization on save:** whitespace trimmed + collapsed when a user adds a list item ([views.py](onbogo/views.py) `sales` POST).
+- **Empty-state hints:** "Try: bacon · yogurt · chicken · Sweet Baby Ray's" shown on the `/sales` page when the favs list is empty, to teach the input format.
+
+**Known limit:** broad single-word queries (`pods`, `milk`) correctly match everything containing that word. That's a UX problem, not a matching problem — the new per-fav miss report helps users iterate ("too many results for `pods`? try `tide pods`"). A future add would be an exclusion syntax (`pods -coffee`), but it's not needed right now.
+
+---
+
+## 7. Other polish items (low priority)
 
 - **Mojibake helper now shared.** `fix_encoding()` lives in [onbogo/text.py](onbogo/text.py) and is applied in both [sales.py](onbogo/sales.py) (product titles/deals) and [store.py](onbogo/store.py) (store names/addresses). If a new encoding edge case appears (e.g. CP1252 smart quotes from a different upstream source), extend the helper there — one place, two callers.

@@ -4,6 +4,7 @@ import logging
 
 from . import notify
 from . import sales
+from . import search
 from . import date
 from . import db
 
@@ -15,27 +16,33 @@ logging.basicConfig(
 
 
 def run(user):
+    """Return {"items": [...matched sale items...], "misses": [...favs with no hits...]}."""
     try:
         store_id = user["my_store"]["store_id"]
         logging.debug(f"store_id: {store_id}")
 
         if not store_id:
             logging.warning(f"No store saved to profile for user: {user['_id']}. Unable to find sales.")
-            return []
+            return {"items": [], "misses": []}
 
         all_sale_items = sales.get_weekly_ad(store_id, user)
+        favs = [f for f in user.get("favs", []) if f]
 
-        # Filter to items matching the user's shopping list
-        favs = [f.lower() for f in user.get("favs", [])]
-        if favs:
-            my_sale_items = [
-                item for item in all_sale_items
-                if any(fav in item["title"].lower() for fav in favs)
-            ]
-        else:
-            my_sale_items = []
+        my_sale_items = []
+        misses = []
+        seen_titles = set()
 
-        logging.debug(f"my_sale_items for {user['username']}: {my_sale_items}")
+        for fav in favs:
+            hits = [item for item in all_sale_items if search.matches(fav, item["title"])]
+            if not hits:
+                misses.append(fav)
+                continue
+            for item in hits:
+                if item["title"] not in seen_titles:
+                    my_sale_items.append(item)
+                    seen_titles.add(item["title"])
+
+        logging.debug(f"my_sale_items for {user['username']}: {len(my_sale_items)} hits, {len(misses)} misses")
 
         if not my_sale_items:
             alert_msg = f"Hi {user['username']}, no sale items matching your list this week."
@@ -47,17 +54,18 @@ def run(user):
                 lines.append(item['price_info'])
                 lines.append(item['valid_dates'])
             alert_msg = f"Hello, {user['username']}, here are your sales from onbogo.onrender.com\n" + "\n".join(lines)
+            if misses:
+                alert_msg += f"\n\nNo sales this week for: {', '.join(misses)}"
 
-        # Send notification(s)
         notify.send_alert(alert_msg, user=user)
         logging.debug(f"Notifications sent to {user['username']}!")
         logging.debug(f"Notifications length: {len(alert_msg)}!")
 
-        return my_sale_items
+        return {"items": my_sale_items, "misses": misses}
 
     except Exception as e:
         logging.error(f"App run error: {e}", exc_info=True)
-        return []
+        return {"items": [], "misses": []}
 
 
 def run_schedule():

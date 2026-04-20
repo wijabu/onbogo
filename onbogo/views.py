@@ -1,5 +1,6 @@
 import ast
 import logging
+import re
 import time
 
 from functools import wraps
@@ -35,38 +36,41 @@ def sales():
     my_store = session["user"]["my_store"]
     loading = request.args.get("loading")
 
-    if "my_sale_items" not in session:
-        session["my_sale_items"] = []
-
-    my_sale_items = session["my_sale_items"]
+    my_sale_items = session.get("my_sale_items", [])
+    missed_favs = session.get("missed_favs", [])
 
     if request.method == "GET":
         if loading == "True":
             flash("Finding sales... Check your notifications!", category="success")
 
-        return render_template("sales.html",my_store=my_store, my_sale_items=my_sale_items, loading=loading)
+        return render_template(
+            "sales.html",
+            my_store=my_store,
+            my_sale_items=my_sale_items,
+            missed_favs=missed_favs,
+            loading=loading,
+        )
 
     try:
-        
         if request.method == "POST":
             email = session["user"]["email"]
             favs = session["user"]["favs"]
-            item = request.form["item"]
+            item = re.sub(r"\s+", " ", request.form["item"].strip())
 
-            if len(item) < 1: 
+            if len(item) < 1:
                 flash("Must submit a valid item name", category="danger")
             elif item in favs:
                 flash("Item already found on shopping list", category="danger")
-            else: 
-                favs = favs.append(item)
-                
+            else:
+                favs.append(item)
+
                 # add item to shopping list
                 User().add_item(email=email, item=item)
                 flash(f"{item} added to shopping list!", category="success")
     except:
         flash("ERROR: Unable to add item to list.", category="danger")
-    
-    return render_template("sales.html",my_store=my_store)
+
+    return render_template("sales.html", my_store=my_store)
 
 
 @views.route("/profile", methods=["GET", "POST"])
@@ -223,8 +227,9 @@ def find():
 def find_sales():
     user = session.get("user", {})
 
-    my_sale_items = onbogo.run(user=user)
-    session["my_sale_items"] = my_sale_items
+    result = onbogo.run(user=user)
+    session["my_sale_items"] = result["items"]
+    session["missed_favs"] = result["misses"]
     session.modified = True
     return "", 200
 
