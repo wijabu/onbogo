@@ -77,6 +77,40 @@ Shopping-list matching is no longer plain substring. See [onbogo/search.py](onbo
 
 ---
 
-## 7. Other polish items (low priority)
+## 7. Move weekly scheduler out of gunicorn (architectural)
+
+The Thursday alert job runs via APScheduler **inside the gunicorn worker process**. This has known fragility:
+
+- Every gunicorn restart (deploys, OOM, segfaults) restarts the scheduler. APScheduler reschedules on startup, but if a restart lands during the scheduled window, the run is dropped. We've added `misfire_grace_time=3600` to widen the window, but it's still in-process.
+- No persistence. There's no record that the job ran, succeeded, or failed beyond what's in `journalctl -u onbogo`.
+- Single point of failure with the web app.
+
+**Better architecture:** move `run_schedule()` to a dedicated systemd timer (or system cron). Reasons: independent of gunicorn lifecycle, runs even if the web app is wedged, easier to invoke manually for testing.
+
+Sketch:
+```ini
+# /etc/systemd/system/onbogo-weekly.service
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/onbogo
+EnvironmentFile=/home/ubuntu/onbogo/.env
+ExecStart=/home/ubuntu/onbogo/venv/bin/python -c "from onbogo.onbogo import run_schedule; run_schedule()"
+
+# /etc/systemd/system/onbogo-weekly.timer
+[Timer]
+OnCalendar=Thu *-*-* 16:30:00 UTC
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+```
+
+`Persistent=true` makes systemd run the job if it was missed during a downtime window — same intent as APScheduler's misfire grace, but enforced by the OS.
+
+Not blocking. The fixes in this commit (count_documents, per-user try/except, misfire_grace_time) make the in-process scheduler reliable enough for now.
+
+---
+
+## 8. Other polish items (low priority)
 
 - **Mojibake helper now shared.** `fix_encoding()` lives in [onbogo/text.py](onbogo/text.py) and is applied in both [sales.py](onbogo/sales.py) (product titles/deals) and [store.py](onbogo/store.py) (store names/addresses). If a new encoding edge case appears (e.g. CP1252 smart quotes from a different upstream source), extend the helper there — one place, two callers.

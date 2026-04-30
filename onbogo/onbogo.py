@@ -69,12 +69,31 @@ def run(user):
 
 
 def run_schedule():
-    ALL_USERS = db.users.find({})
-    logging.debug(f"Running schedule for {ALL_USERS.count()} users")
+    """Weekly Thursday job — alert every user with a saved store and a non-empty fav list."""
+    logging.info("Scheduler fired: starting weekly run_schedule")
+    try:
+        total = db.users.count_documents({})
+        eligible = list(db.users.find({
+            "my_store.store_id": {"$exists": True, "$ne": ""},
+            "favs": {"$exists": True, "$ne": []},
+        }))
+        logging.info(f"run_schedule: {total} total users, {len(eligible)} eligible for alerts")
 
-    for user in ALL_USERS:
-        if user.get("my_store", {}).get("store_id") and user.get("favs"):
-            run(user)
+        successes = 0
+        failures = 0
+        for user in eligible:
+            try:
+                run(user)
+                successes += 1
+            except Exception as e:
+                failures += 1
+                logging.error(
+                    f"run_schedule: failed for user {user.get('username', user.get('_id'))}: {e}",
+                    exc_info=True,
+                )
+        logging.info(f"run_schedule complete: {successes} succeeded, {failures} failed")
+    except Exception as e:
+        logging.error(f"run_schedule top-level failure: {e}", exc_info=True)
 
 
 if __name__ == "__main__":

@@ -51,10 +51,22 @@ def create_app():
 
     # activate scheduler
     scheduler.start()
-    
-    # scheduler time set to UTC
-    # scheduler.add_job(func=onbogo.run_schedule, trigger='cron', day_of_week='thu', hour=16, minute=15)
-    scheduler.add_job(func=onbogo.run_schedule, trigger='cron', day_of_week='thu', hour=16, minute=30)
+
+    # Cron is in UTC. 16:30 UTC = 12:30pm EDT / 11:30am EST.
+    # misfire_grace_time=3600 means a 1-hour window after the scheduled time is still eligible
+    # to run — covers gunicorn restarts during deploys without dropping the alert.
+    # coalesce=True collapses any backlog into a single run if multiple are missed.
+    scheduler.add_job(
+        func=onbogo.run_schedule,
+        trigger='cron',
+        day_of_week='thu',
+        hour=16,
+        minute=30,
+        misfire_grace_time=3600,
+        coalesce=True,
+        id='weekly_alerts',
+        replace_existing=True,
+    )
     atexit.register(lambda: scheduler.shutdown())
 
     return app
