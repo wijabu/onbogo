@@ -52,7 +52,7 @@ def create_app():
     # activate scheduler
     scheduler.start()
 
-    # Cron is in UTC. 16:30 UTC = 12:30pm EDT / 11:30am EST.
+    # Cron is in UTC. 15:45 UTC = 11:45am EDT / 10:45am EST.
     # misfire_grace_time=3600 means a 1-hour window after the scheduled time is still eligible
     # to run — covers gunicorn restarts during deploys without dropping the alert.
     # coalesce=True collapses any backlog into a single run if multiple are missed.
@@ -60,8 +60,8 @@ def create_app():
         func=onbogo.run_schedule,
         trigger='cron',
         day_of_week='thu',
-        hour=16,
-        minute=30,
+        hour=15,
+        minute=45,
         misfire_grace_time=3600,
         coalesce=True,
         id='weekly_alerts',
